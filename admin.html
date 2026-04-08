@@ -511,7 +511,7 @@
 
       // 1. Batch upsert pegawai (1 RPC call)
       const pegawaiArr = rows.map(r => ({ nip: r.nip, nama: r.nama, no_rek: r.no_rek, pin: r.pin, tipe: 'ASN' }));
-      const { error: errPeg } = await db.rpc('upsert_pegawai_batch', { p_records: JSON.stringify(pegawaiArr) });
+      const { error: errPeg } = await db.rpc('upsert_pegawai_batch', { p_records: pegawaiArr });
 
       // 2. Batch upsert slip_gaji (1 upsert call)
       const slipArr = rows.map(r => ({
@@ -553,7 +553,7 @@
 
       // 1. Batch upsert pegawai (1 RPC call)
       const pegawaiArr = rows.map(r => ({ nip: r.nip, nama: r.nama, no_rek: r.no_rek, pin: r.pin, tipe }));
-      const { error: errPeg } = await db.rpc('upsert_pegawai_batch', { p_records: JSON.stringify(pegawaiArr) });
+      const { error: errPeg } = await db.rpc('upsert_pegawai_batch', { p_records: pegawaiArr });
 
       // 2. Batch upsert slip_tpp (1 upsert call)
       const slipArr = rows.map(r => ({
