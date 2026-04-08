@@ -1,0 +1,6 @@
+[build]
+  publish = "."
+
+# Pretty URLs - Netlify otomatis serve .html tanpa extension
+# /generator-admin → generator-admin.html
+# /generator-tpp  → generator-tpp.html
