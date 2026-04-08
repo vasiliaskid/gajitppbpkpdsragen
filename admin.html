@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Slip Gaji BPKPD Sragen</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --navy:#1b3a5c;--navy-dark:#132942;--navy-light:#24537d;--navy-bg:#0f2035;
+      --gold:#c9a84c;--bg:#f0f3f7;--card:#fff;--text:#2c3e50;
+      --text-sec:#5a6c7e;--border:#dce3eb;
+      --red:#b94a3f;--green:#2e7d4f;--green-bg:#edf7f0;--red-bg:#fdf0ee;
+      --blue:#1976d2;--blue-bg:#e3f2fd;
+      --orange:#e65100;--orange-bg:#fff3e0;
+      --radius:8px;--sidebar:240px;
+    }
+    html{font-size:14px;height:100%}
+    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+    /* ── LOGIN ── */
+    .login-screen{min-height:100vh;display:grid;place-items:center;background:var(--navy-bg)}
+    .login-box{background:#fff;border-radius:16px;padding:40px 36px;width:100%;max-width:380px;box-shadow:0 30px 80px rgba(0,0,0,.3)}
+    .login-box .logo{text-align:center;margin-bottom:28px}
+    .login-box .logo-badge{width:56px;height:56px;border:3px solid var(--gold);border-radius:10px;display:inline-grid;place-items:center;color:var(--gold);font-size:22px;font-weight:700;letter-spacing:-1px;margin-bottom:10px}
+    .login-box h1{font-size:20px;font-weight:700;color:var(--navy)}
+    .login-box p{font-size:12px;color:var(--text-sec);margin-top:3px}
+    .form-group{margin-bottom:16px}
+    .form-label{display:block;font-size:11px;font-weight:600;color:var(--text-sec);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+    .form-input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit;color:var(--text);background:#fafbfc;transition:border-color .15s}
+    .form-input:focus{outline:none;border-color:var(--navy-light);background:#fff}
+    .btn-full{width:100%;padding:12px;background:var(--navy);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:background .15s}
+    .btn-full:hover{background:var(--navy-dark)}
+    .btn-full:disabled{opacity:.6;cursor:not-allowed}
+    .err-msg{margin-top:12px;padding:10px 12px;background:var(--red-bg);color:var(--red);font-size:13px;border-radius:6px;display:none;border-left:3px solid var(--red)}
+    .err-msg.show{display:block}
+
+    /* ── LAYOUT ── */
+    .app{display:none;min-height:100vh}
+    .app.show{display:flex}
+    .sidebar{width:var(--sidebar);background:var(--navy-bg);min-height:100vh;flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50}
+    .sidebar-logo{padding:20px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .sidebar-logo .badge{width:36px;height:36px;border:2px solid var(--gold);border-radius:6px;display:inline-grid;place-items:center;color:var(--gold);font-size:14px;font-weight:700;margin-right:10px;vertical-align:middle}
+    .sidebar-logo span{color:#fff;font-size:13px;font-weight:600;vertical-align:middle}
+    .sidebar-logo .sub{display:block;color:rgba(255,255,255,.4);font-size:10px;margin-top:2px;margin-left:46px}
+    .nav-group{padding:16px 0 8px}
+    .nav-label{padding:0 16px 6px;font-size:10px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.8px}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:rgba(255,255,255,.6);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;border-left:3px solid transparent;margin:1px 0}
+    .nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
+    .nav-item.active{background:rgba(201,168,76,.15);color:var(--gold);border-left-color:var(--gold)}
+    .nav-item .icon{font-size:16px;width:20px;text-align:center}
+    .sidebar-footer{margin-top:auto;padding:16px;border-top:1px solid rgba(255,255,255,.08)}
+    .btn-signout{width:100%;padding:9px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;font-family:inherit}
+    .btn-signout:hover{background:rgba(185,74,63,.3);color:#ff8a80}
+
+    /* ── MAIN ── */
+    .main{margin-left:var(--sidebar);flex:1;min-height:100vh;display:flex;flex-direction:column}
+    .topbar{background:#fff;border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40}
+    .topbar h2{font-size:16px;font-weight:700;color:var(--navy)}
+    .topbar .badge-admin{background:var(--blue-bg);color:var(--blue);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+    .content{padding:24px;flex:1}
+
+    /* ── CARDS ── */
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px}
+    .card-title{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px}
+    .card-sub{font-size:12px;color:var(--text-sec);margin-bottom:20px}
+
+    /* ── TABS PANEL ── */
+    .panel{display:none}
+    .panel.active{display:block}
+
+    /* ── INFO BOX ── */
+    .info-box{background:var(--blue-bg);border-left:4px solid var(--blue);border-radius:6px;padding:12px 16px;font-size:12px;color:#1a237e;margin-bottom:16px;line-height:1.6}
+    .info-box code{background:rgba(25,118,210,.15);padding:1px 4px;border-radius:3px;font-family:monospace;font-size:11px}
+
+    /* ── IMPORT FORM ── */
+    .import-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+    .col-ref{background:#ffebee;border:1px solid #ffcdd2;border-radius:6px;padding:12px;font-size:11px;color:#c62828;font-family:monospace;line-height:1.8;margin-bottom:16px}
+    textarea.paste-area{width:100%;padding:12px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:monospace;resize:vertical;min-height:180px;background:#fafbfc;line-height:1.5}
+    textarea.paste-area:focus{outline:none;border-color:var(--navy-light)}
+    .btn-import{padding:12px 24px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:8px}
+    .btn-import:hover{background:#1b5e20}
+    .btn-import:disabled{opacity:.6;cursor:not-allowed}
+    .status-box{margin-top:14px;padding:12px 16px;border-radius:6px;font-size:13px;font-weight:600;display:none}
+    .status-box.show{display:block}
+    .status-box.success{background:var(--green-bg);color:var(--green);border-left:4px solid var(--green)}
+    .status-box.error{background:var(--red-bg);color:var(--red);border-left:4px solid var(--red)}
+
+    /* ── PREVIEW TABLE ── */
+    .preview-wrap{overflow-x:auto;margin-top:16px}
+    .preview-wrap table{width:100%;border-collapse:collapse;font-size:12px}
+    .preview-wrap th{background:var(--navy);color:#fff;padding:8px 10px;text-align:left;white-space:nowrap;font-weight:600}
+    .preview-wrap td{padding:7px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+    .preview-wrap tr:hover td{background:#f5f7fa}
+    .preview-count{font-size:12px;color:var(--text-sec);margin-top:8px}
+
+    /* ── USER MANAGEMENT ── */
+    .user-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+    .search-input{flex:1;min-width:200px;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;background:#fafbfc}
+    .search-input:focus{outline:none;border-color:var(--navy-light)}
+    .filter-select{padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;background:#fafbfc}
+    .filter-select:focus{outline:none;border-color:var(--navy-light)}
+    .user-table-wrap{overflow-x:auto}
+    .user-table{width:100%;border-collapse:collapse;font-size:13px}
+    .user-table th{background:#f5f7fa;color:var(--text-sec);padding:10px 12px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.3px;border-bottom:2px solid var(--border);white-space:nowrap}
+    .user-table td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+    .user-table tr:hover td{background:#fafbfc}
+    .badge-asn{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;background:var(--blue-bg);color:var(--blue)}
+    .badge-p3k{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;background:var(--orange-bg);color:var(--orange)}
+    .badge-active{color:var(--green);font-weight:600}
+    .badge-inactive{color:var(--red);font-weight:600}
+    .pin-field{font-family:monospace;font-size:12px;background:#f5f7fa;padding:2px 6px;border-radius:4px;cursor:pointer;letter-spacing:1px}
+    .action-btns{display:flex;gap:6px}
+    .btn-sm{padding:5px 10px;border:1px solid;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+    .btn-view{border-color:#9e9e9e;color:#616161;background:transparent}
+    .btn-view:hover{background:#f5f5f5;border-color:#616161}
+    .btn-reset{border-color:var(--blue);color:var(--blue);background:transparent}
+    .btn-reset:hover{background:var(--blue-bg)}
+    .btn-delete{border-color:var(--red);color:var(--red);background:transparent}
+    .btn-delete:hover{background:var(--red-bg)}
+    .empty-row td{text-align:center;color:var(--text-sec);padding:32px;font-style:italic}
+
+    /* ── MODAL ── */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;place-items:center;z-index:200;padding:16px}
+    .modal-overlay.show{display:grid}
+    .modal{background:#fff;border-radius:12px;padding:28px 24px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+    .modal h3{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:12px}
+    .modal .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+    .modal .info-row:last-of-type{border-bottom:none}
+    .modal .info-label{color:var(--text-sec)}
+    .modal .info-value{font-weight:600;font-family:monospace;letter-spacing:1px}
+    .modal-btns{display:flex;gap:8px;margin-top:16px}
+    .btn-modal-close{flex:1;padding:10px;border:1px solid var(--border);background:#fff;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+    .btn-modal-close:hover{background:var(--bg)}
+
+    /* ── LOADING ── */
+    .overlay{position:fixed;inset:0;background:rgba(255,255,255,.7);display:none;place-items:center;z-index:999;backdrop-filter:blur(2px)}
+    .overlay.show{display:grid}
+    .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* ── TOAST ── */
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#222;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;opacity:0;transition:all .3s;z-index:999;white-space:nowrap}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .toast.s{background:var(--green)}
+    .toast.e{background:var(--red)}
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:768px){
+      :root{--sidebar:0px}
+      .sidebar{display:none}
+      .main{margin-left:0}
+      .import-row{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOADING -->
+  <div class="overlay" id="overlay"><div class="spinner"></div></div>
+  <div class="toast" id="toast"></div>
+
+  <!-- MODAL DETAIL USER -->
+  <div class="modal-overlay" id="user-modal">
+    <div class="modal">
+      <h3>👤 Detail Pegawai</h3>
+      <div class="info-row"><span class="info-label">NIP</span><span class="info-value" id="m-nip">—</span></div>
+      <div class="info-row"><span class="info-label">Nama</span><span class="info-value" id="m-nama">—</span></div>
+      <div class="info-row"><span class="info-label">No. Rekening</span><span class="info-value" id="m-rek">—</span></div>
+      <div class="info-row"><span class="info-label">Tipe</span><span class="info-value" id="m-tipe">—</span></div>
+      <div class="info-row"><span class="info-label">PIN Default</span><span class="info-value" id="m-pindef">—</span></div>
+      <div class="info-row"><span class="info-label">PIN Aktif</span><span class="info-value" id="m-pinaktif">—</span></div>
+      <div class="modal-btns">
+        <button class="btn-modal-close" onclick="closeUserModal()">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN SCREEN -->
+  <div class="login-screen" id="login-screen">
+    <div class="login-box">
+      <div class="logo">
+        <div class="logo-badge">SG</div>
+        <h1>Admin Dashboard</h1>
+        <p>Slip Gaji &amp; TPP — BPKPD Sragen</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password Admin</label>
+        <input type="password" id="admin-pass" class="form-input" placeholder="Password admin" autocomplete="current-password">
+      </div>
+      <button class="btn-full" id="btn-login" onclick="doAdminLogin()">🔐 Masuk sebagai Admin</button>
+      <div class="err-msg" id="login-err"></div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div class="app" id="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <span class="badge">SG</span>
+        <span>BPKPD Sragen</span>
+        <span class="sub">Admin Dashboard</span>
+      </div>
+      <nav>
+        <div class="nav-group">
+          <div class="nav-label">Import Data</div>
+          <div class="nav-item active" id="nav-gaji" onclick="showPanel('gaji')">
+            <span class="icon">📥</span> Gaji ASN
+          </div>
+          <div class="nav-item" id="nav-tpp-asn" onclick="showPanel('tpp-asn')">
+            <span class="icon">📥</span> TPP ASN
+          </div>
+          <div class="nav-item" id="nav-tpp-p3k" onclick="showPanel('tpp-p3k')">
+            <span class="icon">📥</span> TPP P3K
+          </div>
+        </div>
+        <div class="nav-group">
+          <div class="nav-label">Manajemen</div>
+          <div class="nav-item" id="nav-users" onclick="showPanel('users')">
+            <span class="icon">👥</span> User / Pegawai
+          </div>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn-signout" onclick="doSignOut()">↩ Keluar</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <div class="topbar">
+        <h2 id="topbar-title">Import Gaji ASN</h2>
+        <span class="badge-admin">👨‍💼 Admin</span>
+      </div>
+      <div class="content">
+
+        <!-- ══ PANEL: IMPORT GAJI ASN ══ -->
+        <div class="panel active" id="panel-gaji">
+          <div class="card">
+            <div class="card-title">Import Data Gaji ASN</div>
+            <div class="card-sub">Copy-paste dari Master Excel Gaji ASN per bulan</div>
+            <div class="info-box">
+              <strong>Cara pakai:</strong> Pilih bulan, lalu blok seluruh baris data di Excel (mulai baris data pertama, TANPA baris header), kemudian paste ke kotak di bawah.<br>
+              <strong>NIP dan PIN</strong> dari kolom Excel akan otomatis didaftarkan/diperbarui di sistem.
+            </div>
+            <div class="import-row">
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Bulan (contoh: April 2026)</label>
+                <input type="text" id="gaji-bulan" class="form-input" placeholder="April 2026">
+              </div>
+            </div>
+            <div class="col-ref">
+              Susunan Kolom Excel:<br>
+              No | Nama | NIP | PIN | No Rek | Gaji Pokok | Bank Jateng | DPLK | Pot BPPKAD | Korpri | Dh Wanita | Sosial BPKPD | Beras | Zakat | Besukan TU | PMI | Kop Sedya Rhy | Kop Perdagangan | BKK Gesi | Joko Tingkir | BRI | BKK K.Malang | BJB | Penerimaan Bersih
+            </div>
+            <label class="form-label">Paste Data Excel</label>
+            <textarea class="paste-area" id="gaji-paste" placeholder="Paste data Excel di sini (Ctrl+V)..." oninput="previewImport('gaji')"></textarea>
+            <div id="gaji-preview"></div>
+            <br>
+            <button class="btn-import" id="btn-import-gaji" onclick="importGaji()">📤 Import Gaji ASN</button>
+            <div class="status-box" id="gaji-status"></div>
+          </div>
+        </div>
+
+        <!-- ══ PANEL: IMPORT TPP ASN ══ -->
+        <div class="panel" id="panel-tpp-asn">
+          <div class="card">
+            <div class="card-title">Import Data TPP ASN</div>
+            <div class="card-sub">Copy-paste dari Master Excel TPP ASN per bulan</div>
+            <div class="info-box">
+              <strong>Pastikan Excel TPP ASN Anda memiliki kolom NIP dan PIN.</strong> Kolom ini diperlukan untuk menghubungkan data TPP ke akun pegawai.
+            </div>
+            <div class="import-row">
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Bulan (contoh: April 2026)</label>
+                <input type="text" id="asn-bulan" class="form-input" placeholder="April 2026">
+              </div>
+            </div>
+            <div class="col-ref">
+              Susunan Kolom Excel:<br>
+              No | Nama | NIP | PIN | No Rek | TPP Kotor | Pot TPP | Penerimaan | Pot Koperasi | Matra | Zakat | Infaq | BPJS | Penerimaan Bersih
+            </div>
+            <label class="form-label">Paste Data Excel</label>
+            <textarea class="paste-area" id="asn-paste" placeholder="Paste data Excel di sini (Ctrl+V)..." oninput="previewTPP('asn')"></textarea>
+            <div id="asn-preview"></div>
+            <br>
+            <button class="btn-import" id="btn-import-asn" onclick="importTPP('ASN')">📤 Import TPP ASN</button>
+            <div class="status-box" id="asn-status"></div>
+          </div>
+        </div>
+
+        <!-- ══ PANEL: IMPORT TPP P3K ══ -->
+        <div class="panel" id="panel-tpp-p3k">
+          <div class="card">
+            <div class="card-title">Import Data TPP P3K</div>
+            <div class="card-sub">Copy-paste dari Master Excel TPP P3K per bulan</div>
+            <div class="info-box">
+              <strong>Pegawai P3K akan otomatis dibuat</strong> jika NIP belum terdaftar, dengan tipe = P3K.
+            </div>
+            <div class="import-row">
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Bulan (contoh: April 2026)</label>
+                <input type="text" id="p3k-bulan" class="form-input" placeholder="April 2026">
+              </div>
+            </div>
+            <div class="col-ref">
+              Susunan Kolom Excel:<br>
+              No | Nama | NIP | PIN | No Rek | TPP Kotor | Pot TPP | Penerimaan | Pot Koperasi | Matra | Zakat | Infaq | BPJS | Penerimaan Bersih
+            </div>
+            <label class="form-label">Paste Data Excel</label>
+            <textarea class="paste-area" id="p3k-paste" placeholder="Paste data Excel di sini (Ctrl+V)..." oninput="previewTPP('p3k')"></textarea>
+            <div id="p3k-preview"></div>
+            <br>
+            <button class="btn-import" id="btn-import-p3k" onclick="importTPP('P3K')">📤 Import TPP P3K</button>
+            <div class="status-box" id="p3k-status"></div>
+          </div>
+        </div>
+
+        <!-- ══ PANEL: USERS ══ -->
+        <div class="panel" id="panel-users">
+          <div class="card">
+            <div class="card-title">Manajemen User / Pegawai</div>
+            <div class="card-sub">Kelola akun pegawai: lihat PIN, reset PIN, atau hapus akun</div>
+            <div class="user-toolbar">
+              <input type="text" class="search-input" id="user-search" placeholder="🔍 Cari NIP atau Nama..." oninput="filterUsers()">
+              <select class="filter-select" id="user-filter" onchange="filterUsers()">
+                <option value="">Semua Tipe</option>
+                <option value="ASN">ASN</option>
+                <option value="P3K">P3K</option>
+              </select>
+              <button class="btn-import" style="padding:9px 16px;font-size:13px" onclick="loadUsers()">🔄 Refresh</button>
+            </div>
+            <div class="user-table-wrap">
+              <table class="user-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>NIP</th>
+                    <th>Nama</th>
+                    <th>Tipe</th>
+                    <th>No. Rek</th>
+                    <th>PIN Default</th>
+                    <th>PIN Aktif</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="user-tbody">
+                  <tr class="empty-row"><td colspan="8">Klik Refresh untuk memuat data</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="user-count" class="preview-count"></div>
+          </div>
+        </div>
+
+      </div><!-- /content -->
+    </main>
+  </div><!-- /app -->
+
+  <script src="supabase-config.js"></script>
+  <script>
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let allUsers = [];
+
+    // ── Helpers ───────────────────────────────
+    const setLoad = v => document.getElementById('overlay').classList.toggle('show', v);
+    function toast(msg, type='') {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.className = 'toast show ' + type;
+      setTimeout(() => t.className = 'toast', 3000);
+    }
+    function setStatus(id, msg, type) {
+      const el = document.getElementById(id);
+      el.textContent = msg; el.className = 'status-box show ' + type;
+    }
+    function cleanNum(val) {
+      if (!val) return 0;
+      let s = val.toString().trim().replace(/,(\d{1,2})$/, '').replace(/\.(\d{1,2})$/, '').replace(/\D/g, '');
+      return parseInt(s) || 0;
+    }
+
+    // ── Admin Login ───────────────────────────
+    document.getElementById('admin-pass').addEventListener('keydown', e => { if(e.key==='Enter') doAdminLogin(); });
+    async function doAdminLogin() {
+      const pass = document.getElementById('admin-pass').value.trim();
+      const errEl = document.getElementById('login-err');
+      errEl.className = 'err-msg';
+      if (!pass) { errEl.textContent = 'Password wajib diisi.'; errEl.className = 'err-msg show'; return; }
+
+      const btn = document.getElementById('btn-login');
+      btn.disabled = true; btn.textContent = 'Memproses...';
+      setLoad(true);
+
+      const { data, error } = await db
+        .from('admin_config')
+        .select('value')
+        .eq('key', 'admin_password')
+        .single();
+
+      setLoad(false);
+      btn.disabled = false; btn.textContent = '🔐 Masuk sebagai Admin';
+
+      if (error || !data || data.value !== pass) {
+        errEl.textContent = 'Password admin salah.';
+        errEl.className = 'err-msg show';
+        return;
+      }
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').classList.add('show');
+    }
+
+    function doSignOut() {
+      document.getElementById('app').classList.remove('show');
+      document.getElementById('login-screen').style.display = '';
+      document.getElementById('admin-pass').value = '';
+    }
+
+    // ── Navigation ────────────────────────────
+    const panels = ['gaji','tpp-asn','tpp-p3k','users'];
+    const titles = { 'gaji':'Import Gaji ASN', 'tpp-asn':'Import TPP ASN', 'tpp-p3k':'Import TPP P3K', 'users':'Manajemen User / Pegawai' };
+    function showPanel(id) {
+      panels.forEach(p => {
+        document.getElementById('panel-'+p).classList.toggle('active', p===id);
+        document.getElementById('nav-'+p).classList.toggle('active', p===id);
+      });
+      document.getElementById('topbar-title').textContent = titles[id];
+      if (id === 'users') loadUsers();
+    }
+
+    // ── Parse Excel Paste ─────────────────────
+    function parseGajiRows(text) {
+      const rows = [];
+      text.trim().split('\n').forEach((line, i) => {
+        const rawLine = line.trim();
+        if (!rawLine) return;
+        const c = rawLine.split('\t');
+        if (c.length < 5) return;
+        rows.push({
+          no: parseInt(cleanNum(c[0])) || (i+1),
+          nama: (c[1]||'').trim(), nip: (c[2]||'').trim(), pin: (c[3]||'').trim(),
+          no_rek: (c[4]||'').trim(), gaji: cleanNum(c[5]),
+          pot_bank_jateng: cleanNum(c[6]), dplk: cleanNum(c[7]),
+          pot_bppkad: cleanNum(c[8]), korpri: cleanNum(c[9]),
+          dh_wanita: cleanNum(c[10]), sosial_bppkad: cleanNum(c[11]),
+          beras: cleanNum(c[12]), zakat: cleanNum(c[13]),
+          besukan_tu: cleanNum(c[14]), pmi: cleanNum(c[15]),
+          kop_sedya_rhy: cleanNum(c[16]), kop_perdagangan: cleanNum(c[17]),
+          bkk_gesi: cleanNum(c[18]), joko_tingkir: cleanNum(c[19]),
+          bri: cleanNum(c[20]), bkk_karangmalang: cleanNum(c[21]),
+          bjb: cleanNum(c[22]), penerimaan_bersih: cleanNum(c[23])
+        });
+      });
+      return rows;
+    }
+
+    function parseTPPRows(text) {
+      const rows = [];
+      text.trim().split('\n').forEach((line, i) => {
+        const rawLine = line.trim();
+        if (!rawLine) return;
+        const c = rawLine.split('\t');
+        if (c.length < 5) return;
+        rows.push({
+          no: parseInt(cleanNum(c[0])) || (i+1),
+          nama: (c[1]||'').trim(), nip: (c[2]||'').trim(), pin: (c[3]||'').trim(),
+          no_rek: (c[4]||'').trim(), tpp_kotor: cleanNum(c[5]),
+          pot_tpp: cleanNum(c[6]), penerimaan: cleanNum(c[7]),
+          pot_koperasi: cleanNum(c[8]), matra: cleanNum(c[9]),
+          zakat: cleanNum(c[10]), infaq: cleanNum(c[11]),
+          bpjs: cleanNum(c[12]), penerimaan_bersih: cleanNum(c[13])
+        });
+      });
+      return rows;
+    }
+
+    // ── Preview ───────────────────────────────
+    function previewImport(type) {
+      const text = document.getElementById('gaji-paste').value;
+      const rows = parseGajiRows(text).slice(0, 5);
+      const el = document.getElementById('gaji-preview');
+      if (!rows.length) { el.innerHTML=''; return; }
+      el.innerHTML = `<div class="preview-wrap"><table><thead><tr><th>#</th><th>Nama</th><th>NIP</th><th>PIN</th><th>Gaji</th><th>Bersih</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.no}</td><td>${r.nama}</td><td>${r.nip}</td><td>${r.pin}</td><td>Rp ${r.gaji.toLocaleString('id-ID')}</td><td>Rp ${r.penerimaan_bersih.toLocaleString('id-ID')}</td></tr>`).join('')}</tbody></table></div><div class="preview-count">Preview 5 baris pertama. Total dideteksi: ${parseGajiRows(text).length} baris.</div>`;
+    }
+
+    function previewTPP(type) {
+      const text = document.getElementById(type+'-paste').value;
+      const rows = parseTPPRows(text).slice(0, 5);
+      const el = document.getElementById(type+'-preview');
+      if (!rows.length) { el.innerHTML=''; return; }
+      el.innerHTML = `<div class="preview-wrap"><table><thead><tr><th>#</th><th>Nama</th><th>NIP</th><th>PIN</th><th>TPP Kotor</th><th>Bersih</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.no}</td><td>${r.nama}</td><td>${r.nip}</td><td>${r.pin}</td><td>Rp ${r.tpp_kotor.toLocaleString('id-ID')}</td><td>Rp ${r.penerimaan_bersih.toLocaleString('id-ID')}</td></tr>`).join('')}</tbody></table></div><div class="preview-count">Preview 5 baris pertama. Total: ${parseTPPRows(text).length} baris.</div>`;
+    }
+
+    // ── Import Gaji ASN ───────────────────────
+    async function importGaji() {
+      const bulan = document.getElementById('gaji-bulan').value.trim();
+      const text  = document.getElementById('gaji-paste').value;
+      if (!bulan) { setStatus('gaji-status','⚠️ Isi nama bulan terlebih dahulu!','error'); return; }
+      const rows = parseGajiRows(text);
+      if (!rows.length) { setStatus('gaji-status','⚠️ Data kosong atau format salah.','error'); return; }
+
+      const btn = document.getElementById('btn-import-gaji');
+      btn.disabled = true; btn.textContent = '⏳ Mengimpor...';
+      setLoad(true);
+
+      let ok=0, fail=0;
+      for (const r of rows) {
+        if (!r.nip || !r.nama) { fail++; continue; }
+        // Upsert pegawai via RPC
+        await db.rpc('upsert_pegawai', { p_nip: r.nip, p_nama: r.nama, p_no_rek: r.no_rek, p_pin: r.pin, p_tipe: 'ASN' });
+        // Upsert slip gaji
+        const { error } = await db.from('slip_gaji').upsert({
+          nip: r.nip, nama: r.nama, no_rek: r.no_rek, bulan,
+          gaji: r.gaji, pot_bank_jateng: r.pot_bank_jateng, dplk: r.dplk,
+          pot_bppkad: r.pot_bppkad, korpri: r.korpri, dh_wanita: r.dh_wanita,
+          sosial_bppkad: r.sosial_bppkad, beras: r.beras, zakat: r.zakat,
+          besukan_tu: r.besukan_tu, pmi: r.pmi, kop_sedya_rhy: r.kop_sedya_rhy,
+          kop_perdagangan: r.kop_perdagangan, bkk_gesi: r.bkk_gesi,
+          joko_tingkir: r.joko_tingkir, bri: r.bri,
+          bkk_karangmalang: r.bkk_karangmalang, bjb: r.bjb,
+          penerimaan_bersih: r.penerimaan_bersih
+        }, { onConflict: 'nip,bulan' });
+        error ? fail++ : ok++;
+      }
+
+      setLoad(false);
+      btn.disabled = false; btn.textContent = '📤 Import Gaji ASN';
+      setStatus('gaji-status', `✅ Import selesai: ${ok} berhasil, ${fail} gagal. Bulan: ${bulan}`, ok>0?'success':'error');
+      if (ok > 0) { document.getElementById('gaji-paste').value=''; document.getElementById('gaji-preview').innerHTML=''; }
+      toast(`Import Gaji ${ok}/${rows.length} berhasil`, ok>0?'s':'e');
+    }
+
+    // ── Import TPP (ASN / P3K) ────────────────
+    async function importTPP(tipe) {
+      const key = tipe === 'ASN' ? 'asn' : 'p3k';
+      const bulan = document.getElementById(key+'-bulan').value.trim();
+      const text  = document.getElementById(key+'-paste').value;
+      if (!bulan) { setStatus(key+'-status','⚠️ Isi nama bulan terlebih dahulu!','error'); return; }
+      const rows = parseTPPRows(text);
+      if (!rows.length) { setStatus(key+'-status','⚠️ Data kosong atau format salah.','error'); return; }
+
+      const btn = document.getElementById('btn-import-'+key);
+      btn.disabled = true; btn.textContent = '⏳ Mengimpor...';
+      setLoad(true);
+
+      let ok=0, fail=0;
+      for (const r of rows) {
+        if (!r.nip || !r.nama) { fail++; continue; }
+        await db.rpc('upsert_pegawai', { p_nip: r.nip, p_nama: r.nama, p_no_rek: r.no_rek, p_pin: r.pin, p_tipe: tipe });
+        const { error } = await db.from('slip_tpp').upsert({
+          nip: r.nip, nama: r.nama, no_rek: r.no_rek, bulan, tipe,
+          tpp_kotor: r.tpp_kotor, pot_tpp: r.pot_tpp, penerimaan: r.penerimaan,
+          pot_koperasi: r.pot_koperasi, matra: r.matra, zakat: r.zakat,
+          infaq: r.infaq, bpjs: r.bpjs, penerimaan_bersih: r.penerimaan_bersih
+        }, { onConflict: 'nip,bulan,tipe' });
+        error ? fail++ : ok++;
+      }
+
+      setLoad(false);
+      btn.disabled = false; btn.textContent = `📤 Import TPP ${tipe}`;
+      setStatus(key+'-status', `✅ Import selesai: ${ok} berhasil, ${fail} gagal. Bulan: ${bulan}`, ok>0?'success':'error');
+      if (ok > 0) { document.getElementById(key+'-paste').value=''; document.getElementById(key+'-preview').innerHTML=''; }
+      toast(`Import TPP ${tipe} ${ok}/${rows.length} berhasil`, ok>0?'s':'e');
+    }
+
+    // ── Load Users ────────────────────────────
+    async function loadUsers() {
+      setLoad(true);
+      const { data, error } = await db
+        .from('pegawai')
+        .select('*')
+        .order('nama', { ascending: true });
+      setLoad(false);
+      if (error) { toast('Gagal memuat data user','e'); return; }
+      allUsers = data || [];
+      renderUsers(allUsers);
+    }
+
+    function filterUsers() {
+      const q = document.getElementById('user-search').value.toLowerCase();
+      const f = document.getElementById('user-filter').value;
+      const filtered = allUsers.filter(u =>
+        (!f || u.tipe === f) &&
+        (!q || u.nip.includes(q) || u.nama.toLowerCase().includes(q))
+      );
+      renderUsers(filtered);
+    }
+
+    function renderUsers(users) {
+      const tbody = document.getElementById('user-tbody');
+      document.getElementById('user-count').textContent = `Menampilkan ${users.length} dari ${allUsers.length} pegawai`;
+      if (!users.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="8">Tidak ada data</td></tr>';
+        return;
+      }
+      tbody.innerHTML = users.map((u, i) => `
+        <tr>
+          <td>${i+1}</td>
+          <td style="font-family:monospace;font-size:12px">${u.nip}</td>
+          <td><strong>${u.nama}</strong></td>
+          <td><span class="${u.tipe === 'ASN' ? 'badge-asn' : 'badge-p3k'}">${u.tipe}</span></td>
+          <td style="font-family:monospace;font-size:12px">${u.no_rek || '—'}</td>
+          <td><span class="pin-field">${u.pin_default}</span></td>
+          <td><span class="pin-field ${u.pin !== u.pin_default ? 'badge-asn' : ''}">${u.pin}</span></td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-sm btn-view" onclick='showUserDetail(${JSON.stringify(u)})'>👁 Detail</button>
+              <button class="btn-sm btn-reset" onclick="resetPIN('${u.nip}','${u.pin_default}')">↩ Reset PIN</button>
+              <button class="btn-sm btn-delete" onclick="deleteUser('${u.nip}','${u.nama}')">🗑 Hapus</button>
+            </div>
+          </td>
+        </tr>`).join('');
+    }
+
+    // ── User Actions ──────────────────────────
+    function showUserDetail(u) {
+      document.getElementById('m-nip').textContent = u.nip;
+      document.getElementById('m-nama').textContent = u.nama;
+      document.getElementById('m-rek').textContent = u.no_rek || '—';
+      document.getElementById('m-tipe').textContent = u.tipe;
+      document.getElementById('m-pindef').textContent = u.pin_default;
+      document.getElementById('m-pinaktif').textContent = u.pin + (u.pin !== u.pin_default ? ' (sudah diganti)' : ' (default)');
+      document.getElementById('user-modal').classList.add('show');
+    }
+    function closeUserModal() { document.getElementById('user-modal').classList.remove('show'); }
+
+    async function resetPIN(nip, pinDefault) {
+      if (!confirm(`Reset PIN pegawai ${nip} ke PIN default (${pinDefault})?`)) return;
+      setLoad(true);
+      const { error } = await db.from('pegawai').update({ pin: pinDefault, updated_at: new Date().toISOString() }).eq('nip', nip);
+      setLoad(false);
+      if (error) { toast('Gagal reset PIN','e'); return; }
+      toast('✅ PIN berhasil direset ke default','s');
+      loadUsers();
+    }
+
+    async function deleteUser(nip, nama) {
+      if (!confirm(`Hapus akun pegawai:\n${nama} (${nip})\n\nSEMUA data slip juga akan terhapus. Yakin?`)) return;
+      setLoad(true);
+      await db.from('slip_gaji').delete().eq('nip', nip);
+      await db.from('slip_tpp').delete().eq('nip', nip);
+      const { error } = await db.from('pegawai').delete().eq('nip', nip);
+      setLoad(false);
+      if (error) { toast('Gagal menghapus akun','e'); return; }
+      toast(`✅ Akun ${nama} berhasil dihapus`, 's');
+      loadUsers();
+    }
+  </script>
+</body>
+</html>
