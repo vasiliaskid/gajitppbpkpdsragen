@@ -496,76 +496,82 @@
       el.innerHTML = `<div class="preview-wrap"><table><thead><tr><th>#</th><th>Nama</th><th>NIP</th><th>PIN</th><th>TPP Kotor</th><th>Bersih</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.no}</td><td>${r.nama}</td><td>${r.nip}</td><td>${r.pin}</td><td>Rp ${r.tpp_kotor.toLocaleString('id-ID')}</td><td>Rp ${r.penerimaan_bersih.toLocaleString('id-ID')}</td></tr>`).join('')}</tbody></table></div><div class="preview-count">Preview 5 baris pertama. Total: ${parseTPPRows(text).length} baris.</div>`;
     }
 
-    // ── Import Gaji ASN ───────────────────────
+    // ── Import Gaji ASN (BATCH — cepat) ─────────
     async function importGaji() {
       const bulan = document.getElementById('gaji-bulan').value.trim();
       const text  = document.getElementById('gaji-paste').value;
       if (!bulan) { setStatus('gaji-status','⚠️ Isi nama bulan terlebih dahulu!','error'); return; }
-      const rows = parseGajiRows(text);
+      const rows = parseGajiRows(text).filter(r => r.nip && r.nama);
       if (!rows.length) { setStatus('gaji-status','⚠️ Data kosong atau format salah.','error'); return; }
 
       const btn = document.getElementById('btn-import-gaji');
-      btn.disabled = true; btn.textContent = '⏳ Mengimpor...';
+      btn.disabled = true;
+      setStatus('gaji-status', `⏳ Memproses ${rows.length} pegawai...`, 'success');
       setLoad(true);
 
-      let ok=0, fail=0;
-      for (const r of rows) {
-        if (!r.nip || !r.nama) { fail++; continue; }
-        // Upsert pegawai via RPC
-        await db.rpc('upsert_pegawai', { p_nip: r.nip, p_nama: r.nama, p_no_rek: r.no_rek, p_pin: r.pin, p_tipe: 'ASN' });
-        // Upsert slip gaji
-        const { error } = await db.from('slip_gaji').upsert({
-          nip: r.nip, nama: r.nama, no_rek: r.no_rek, bulan,
-          gaji: r.gaji, pot_bank_jateng: r.pot_bank_jateng, dplk: r.dplk,
-          pot_bppkad: r.pot_bppkad, korpri: r.korpri, dh_wanita: r.dh_wanita,
-          sosial_bppkad: r.sosial_bppkad, beras: r.beras, zakat: r.zakat,
-          besukan_tu: r.besukan_tu, pmi: r.pmi, kop_sedya_rhy: r.kop_sedya_rhy,
-          kop_perdagangan: r.kop_perdagangan, bkk_gesi: r.bkk_gesi,
-          joko_tingkir: r.joko_tingkir, bri: r.bri,
-          bkk_karangmalang: r.bkk_karangmalang, bjb: r.bjb,
-          penerimaan_bersih: r.penerimaan_bersih
-        }, { onConflict: 'nip,bulan' });
-        error ? fail++ : ok++;
-      }
+      // 1. Batch upsert pegawai (1 RPC call)
+      const pegawaiArr = rows.map(r => ({ nip: r.nip, nama: r.nama, no_rek: r.no_rek, pin: r.pin, tipe: 'ASN' }));
+      const { error: errPeg } = await db.rpc('upsert_pegawai_batch', { p_records: JSON.stringify(pegawaiArr) });
+
+      // 2. Batch upsert slip_gaji (1 upsert call)
+      const slipArr = rows.map(r => ({
+        nip: r.nip, nama: r.nama, no_rek: r.no_rek, bulan,
+        gaji: r.gaji, pot_bank_jateng: r.pot_bank_jateng, dplk: r.dplk,
+        pot_bppkad: r.pot_bppkad, korpri: r.korpri, dh_wanita: r.dh_wanita,
+        sosial_bppkad: r.sosial_bppkad, beras: r.beras, zakat: r.zakat,
+        besukan_tu: r.besukan_tu, pmi: r.pmi, kop_sedya_rhy: r.kop_sedya_rhy,
+        kop_perdagangan: r.kop_perdagangan, bkk_gesi: r.bkk_gesi,
+        joko_tingkir: r.joko_tingkir, bri: r.bri,
+        bkk_karangmalang: r.bkk_karangmalang, bjb: r.bjb,
+        penerimaan_bersih: r.penerimaan_bersih
+      }));
+      const { error: errSlip } = await db.from('slip_gaji').upsert(slipArr, { onConflict: 'nip,bulan' });
 
       setLoad(false);
       btn.disabled = false; btn.textContent = '📤 Import Gaji ASN';
-      setStatus('gaji-status', `✅ Import selesai: ${ok} berhasil, ${fail} gagal. Bulan: ${bulan}`, ok>0?'success':'error');
-      if (ok > 0) { document.getElementById('gaji-paste').value=''; document.getElementById('gaji-preview').innerHTML=''; }
-      toast(`Import Gaji ${ok}/${rows.length} berhasil`, ok>0?'s':'e');
+      const ok = !errPeg && !errSlip;
+      setStatus('gaji-status',
+        ok ? `✅ Berhasil import ${rows.length} data Gaji ASN — Bulan: ${bulan}` : `❌ Error: ${errPeg?.message || errSlip?.message}`,
+        ok ? 'success' : 'error');
+      if (ok) { document.getElementById('gaji-paste').value=''; document.getElementById('gaji-preview').innerHTML=''; }
+      toast(ok ? `✅ Import Gaji ${rows.length} pegawai selesai` : '❌ Import gagal', ok?'s':'e');
     }
 
-    // ── Import TPP (ASN / P3K) ────────────────
+    // ── Import TPP ASN/P3K (BATCH — cepat) ──────
     async function importTPP(tipe) {
       const key = tipe === 'ASN' ? 'asn' : 'p3k';
       const bulan = document.getElementById(key+'-bulan').value.trim();
       const text  = document.getElementById(key+'-paste').value;
       if (!bulan) { setStatus(key+'-status','⚠️ Isi nama bulan terlebih dahulu!','error'); return; }
-      const rows = parseTPPRows(text);
+      const rows = parseTPPRows(text).filter(r => r.nip && r.nama);
       if (!rows.length) { setStatus(key+'-status','⚠️ Data kosong atau format salah.','error'); return; }
 
       const btn = document.getElementById('btn-import-'+key);
-      btn.disabled = true; btn.textContent = '⏳ Mengimpor...';
+      btn.disabled = true;
+      setStatus(key+'-status', `⏳ Memproses ${rows.length} pegawai...`, 'success');
       setLoad(true);
 
-      let ok=0, fail=0;
-      for (const r of rows) {
-        if (!r.nip || !r.nama) { fail++; continue; }
-        await db.rpc('upsert_pegawai', { p_nip: r.nip, p_nama: r.nama, p_no_rek: r.no_rek, p_pin: r.pin, p_tipe: tipe });
-        const { error } = await db.from('slip_tpp').upsert({
-          nip: r.nip, nama: r.nama, no_rek: r.no_rek, bulan, tipe,
-          tpp_kotor: r.tpp_kotor, pot_tpp: r.pot_tpp, penerimaan: r.penerimaan,
-          pot_koperasi: r.pot_koperasi, matra: r.matra, zakat: r.zakat,
-          infaq: r.infaq, bpjs: r.bpjs, penerimaan_bersih: r.penerimaan_bersih
-        }, { onConflict: 'nip,bulan,tipe' });
-        error ? fail++ : ok++;
-      }
+      // 1. Batch upsert pegawai (1 RPC call)
+      const pegawaiArr = rows.map(r => ({ nip: r.nip, nama: r.nama, no_rek: r.no_rek, pin: r.pin, tipe }));
+      const { error: errPeg } = await db.rpc('upsert_pegawai_batch', { p_records: JSON.stringify(pegawaiArr) });
+
+      // 2. Batch upsert slip_tpp (1 upsert call)
+      const slipArr = rows.map(r => ({
+        nip: r.nip, nama: r.nama, no_rek: r.no_rek, bulan, tipe,
+        tpp_kotor: r.tpp_kotor, pot_tpp: r.pot_tpp, penerimaan: r.penerimaan,
+        pot_koperasi: r.pot_koperasi, matra: r.matra, zakat: r.zakat,
+        infaq: r.infaq, bpjs: r.bpjs, penerimaan_bersih: r.penerimaan_bersih
+      }));
+      const { error: errSlip } = await db.from('slip_tpp').upsert(slipArr, { onConflict: 'nip,bulan,tipe' });
 
       setLoad(false);
       btn.disabled = false; btn.textContent = `📤 Import TPP ${tipe}`;
-      setStatus(key+'-status', `✅ Import selesai: ${ok} berhasil, ${fail} gagal. Bulan: ${bulan}`, ok>0?'success':'error');
-      if (ok > 0) { document.getElementById(key+'-paste').value=''; document.getElementById(key+'-preview').innerHTML=''; }
-      toast(`Import TPP ${tipe} ${ok}/${rows.length} berhasil`, ok>0?'s':'e');
+      const ok = !errPeg && !errSlip;
+      setStatus(key+'-status',
+        ok ? `✅ Berhasil import ${rows.length} data TPP ${tipe} — Bulan: ${bulan}` : `❌ Error: ${errPeg?.message || errSlip?.message}`,
+        ok ? 'success' : 'error');
+      if (ok) { document.getElementById(key+'-paste').value=''; document.getElementById(key+'-preview').innerHTML=''; }
+      toast(ok ? `✅ Import TPP ${tipe} ${rows.length} pegawai selesai` : '❌ Import gagal', ok?'s':'e');
     }
 
     // ── Load Users ────────────────────────────

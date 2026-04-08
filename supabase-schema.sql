@@ -91,29 +91,43 @@ CREATE INDEX IF NOT EXISTS idx_pegawai_nip     ON pegawai(nip);
 CREATE INDEX IF NOT EXISTS idx_slip_tpp_tipe   ON slip_tpp(tipe);
 
 -- =============================================
--- RPC: Upsert pegawai (cerdas, tidak timpa PIN
---      yang sudah diganti pegawai sendiri)
+-- RPC: Upsert pegawai BATCH (untuk import massal)
+-- Menerima array JSON, proses 1 trip ke database
 -- =============================================
+CREATE OR REPLACE FUNCTION upsert_pegawai_batch(
+  p_records JSONB
+) RETURNS VOID AS $$
+DECLARE
+  rec JSONB;
+BEGIN
+  FOR rec IN SELECT * FROM jsonb_array_elements(p_records)
+  LOOP
+    INSERT INTO pegawai (nip, nama, no_rek, pin, pin_default, tipe)
+    VALUES (
+      rec->>'nip', rec->>'nama', rec->>'no_rek',
+      rec->>'pin', rec->>'pin', rec->>'tipe'
+    )
+    ON CONFLICT (nip) DO UPDATE SET
+      nama        = EXCLUDED.nama,
+      no_rek      = EXCLUDED.no_rek,
+      tipe        = EXCLUDED.tipe,
+      pin_default = EXCLUDED.pin_default,
+      pin         = CASE
+                      WHEN pegawai.pin = pegawai.pin_default THEN EXCLUDED.pin_default
+                      ELSE pegawai.pin
+                    END,
+      updated_at  = NOW();
+  END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+-- RPC: Upsert pegawai tunggal (untuk operasi individual)
 CREATE OR REPLACE FUNCTION upsert_pegawai(
-  p_nip     TEXT,
-  p_nama    TEXT,
-  p_no_rek  TEXT,
-  p_pin     TEXT,
-  p_tipe    TEXT
+  p_nip TEXT, p_nama TEXT, p_no_rek TEXT, p_pin TEXT, p_tipe TEXT
 ) RETURNS VOID AS $$
 BEGIN
-  INSERT INTO pegawai (nip, nama, no_rek, pin, pin_default, tipe)
-  VALUES (p_nip, p_nama, p_no_rek, p_pin, p_pin, p_tipe)
-  ON CONFLICT (nip) DO UPDATE SET
-    nama        = EXCLUDED.nama,
-    no_rek      = EXCLUDED.no_rek,
-    tipe        = EXCLUDED.tipe,
-    pin_default = EXCLUDED.pin_default,
-    -- Hanya update pin jika pegawai belum ganti (pin masih sama dgn default lama)
-    pin         = CASE
-                    WHEN pegawai.pin = pegawai.pin_default THEN EXCLUDED.pin_default
-                    ELSE pegawai.pin
-                  END,
-    updated_at  = NOW();
+  PERFORM upsert_pegawai_batch(jsonb_build_array(
+    jsonb_build_object('nip',p_nip,'nama',p_nama,'no_rek',p_no_rek,'pin',p_pin,'tipe',p_tipe)
+  ));
 END;
 $$ LANGUAGE plpgsql;
