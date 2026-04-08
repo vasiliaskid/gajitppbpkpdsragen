@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generator File Slip Gaji BPKPD (Multi-Bulan)</title>
+<style>
+  :root { --primary: #1a4f8a; --bg: #f4f7f6; --card: #fff; --text: #333; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 30px 20px; line-height: 1.6; }
+  .container { max-width: 900px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+  h1 { color: var(--primary); font-size: 24px; margin-bottom: 5px; }
+  p.subtitle { color: #666; margin-bottom: 25px; font-size: 14px; }
+  .form-group { margin-bottom: 20px; border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; background: #fafafa; }
+  label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: var(--primary); }
+  input[type="text"], input[type="file"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; max-width: 400px; background: white;}
+  textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; font-family: monospace; resize: vertical; min-height: 150px; white-space: pre; }
+  .btn { background: #27ae60; color: white; border: none; padding: 14px 24px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(39,174,96,0.3); width: 100%; }
+  .btn:hover { background: #219653; transform: translateY(-2px); }
+  .info-box { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin-bottom: 20px; border-radius: 4px; font-size: 14px; }
+  #status { margin-top: 20px; font-weight: bold; text-align: center; }
+  .col-list { font-size: 13px; color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 6px; margin-top: 5px; font-family: monospace;}
+  .step-badge { background: var(--primary); color: white; padding: 3px 8px; border-radius: 50%; font-size: 12px; margin-right: 5px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>⚙️ Generator Gaji (Rekap Multi-Bulan)</h1>
+  <p class="subtitle">Alat ini menyatukan data gaji bulan lalu dengan data bulan baru, agar tidak perlu server / database external yang lambat.</p>
+  
+  <div class="info-box">
+    <strong>Panduan Penggunaan (Agar data lama tidak hilang):</strong><br>
+    Langkah 1: Jika sudah punya riwayat, masukkan file <code>data-gaji.js</code> lama Anda (biar datanya gabung).<br>
+    Langkah 2: Ketik nama bulan yang baru dicopas (contoh: Mei 2026).<br>
+    Langkah 3: Copas data Gaji bulan tersebut dari Excel (hanya baris datanya saja).<br>
+    Langkah 4: Tekan Tombol Download dan lemparkan hasil <code>data-gaji.js</code> yang baru ke dalam folder website utama.
+  </div>
+
+  <div class="form-group">
+    <label><span class="step-badge">1</span> OPSIONAL: Gabungkan dengan data-gaji.js terdahulu</label>
+    <p style="font-size:12px; color:#555; margin-bottom: 8px;">Pilih file <b>data-gaji.js</b> bulan sebelumnya agar histori bulan lalu tidak terhapus dan terbawa ke yang baru.</p>
+    <input type="file" id="input-file-lama" accept=".js">
+    <div id="file-status" style="font-size:12px; font-weight:bold; margin-top:5px; color:#1976d2;">Status Data Terdahulu: Kosong (akan membuat data baru dimulai dari 1 bulan ini)</div>
+  </div>
+
+  <div class="form-group">
+    <label><span class="step-badge">2</span> Bulan Gaji Baru</label>
+    <input type="text" id="input-bulan" value="Bulan April 2026" placeholder="Ketik bulan di sini...">
+  </div>
+
+  <div class="form-group">
+    <label><span class="step-badge">3</span> Paste Data Excel dari Kolom Nama s/d Penerimaan Bersih</label>
+    <div class="col-list">Susunan Kolom Master Excel Anda harus sama:<br>
+    No | Nama | NIP | PIN | No Rek | Gaji | Bank Jateng | DPLK | Pot BPPKAD | Korpri | Dh Wanita | Sosial BPKPD | Beras | Zakat | Besukan TU | PMI | Kop Sedya Rhy | Kop Perdagangan | BKK Gesi | Joko Tingkir | BRI | BKK K.Malang | BJB | Penerimaan Bersih</div>
+    <textarea id="input-tsv" placeholder="Paste data excel di sini..."></textarea>
+  </div>
+
+  <button class="btn" onclick="generate()">⬇️ Download data-gaji.js (Hasil Gabungan Final)</button>
+  <div id="status"></div>
+</div>
+
+<script>
+let existingDB = {};
+
+document.getElementById('input-file-lama').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const isiFile = evt.target.result;
+    try {
+      const jsonStr = isiFile.substring(isiFile.indexOf('{'), isiFile.lastIndexOf('}') + 1);
+      existingDB = JSON.parse(jsonStr);
+      let loadedMonths = Object.keys(existingDB).join(', ');
+      document.getElementById('file-status').innerHTML = '✅ Sukses memuat riwayat bulan: ' + loadedMonths;
+      document.getElementById('file-status').style.color = "green";
+    } catch (err) {
+      document.getElementById('file-status').innerHTML = '❌ Gagal memuat file, mungkinkah isinya kosong/rusak?';
+      document.getElementById('file-status').style.color = "red";
+    }
+  };
+  reader.readAsText(file);
+});
+
+function cleanNumber(val) {
+  if (typeof val === 'number') return val;
+  if (!val) return 0;
+  var str = val.toString().trim();
+  
+  // Hapus angka koma/desimal di ekor (contoh: ,00 atau .00)
+  str = str.replace(/,(\d{1,2})$/, ''); 
+  str = str.replace(/\.(\d{1,2})$/, ''); 
+  
+  // Bersihkan semua karakter yang bukan angka mutlak
+  str = str.replace(/\D/g, ''); 
+  
+  var num = parseInt(str); 
+  return isNaN(num) ? 0 : num;
+}
+
+function generate() {
+  const bulan = document.getElementById('input-bulan').value.trim();
+  const text = document.getElementById('input-tsv').value;
+  const status = document.getElementById('status');
+  
+  if (!text) {
+    status.innerHTML = '<span style="color:red">Error: Kotak data Excel masih kosong! Paste data mulai dr yg no = 1.</span>';
+    return;
+  }
+  if (!bulan) {
+    status.innerHTML = '<span style="color:red">Error: Nama bulan harus diisi!</span>';
+    return;
+  }
+  
+  const lines = text.trim().split('\n');
+  const employees = [];
+  let errorMsg = '';
+  
+  for (let i = 0; i < lines.length; i++) {
+    const rawLine = lines[i].trim();
+    if (!rawLine) continue;
+    const cols = rawLine.split('\t');
+    if (cols.length < 5) {
+      errorMsg = `Gagal di baris ke-${i+1}: Data yang Anda blok kurang lengkap. Patokan harus ada 24 kolom terisi.`;
+      break;
+    }
+    employees.push({
+      no: parseInt(cleanNumber(cols[0])) || (i+1),
+      nama: (cols[1] || "").trim(),
+      nip: (cols[2] || "").trim(),
+      pin: (cols[3] || "").trim(),
+      no_rek: (cols[4] || "").trim(),
+      gaji: cleanNumber(cols[5]),
+      pot_bank_jateng: cleanNumber(cols[6]),
+      dplk: cleanNumber(cols[7]),
+      pot_bppkad: cleanNumber(cols[8]),
+      korpri: cleanNumber(cols[9]),
+      dh_wanita: cleanNumber(cols[10]),
+      sosial_bppkad: cleanNumber(cols[11]),
+      beras: cleanNumber(cols[12]),
+      zakat: cleanNumber(cols[13]),
+      besukan_tu: cleanNumber(cols[14]),
+      pmi: cleanNumber(cols[15]),
+      kop_sedya_rhy: cleanNumber(cols[16]),
+      kop_perdagangan: cleanNumber(cols[17]),
+      bkk_gesi: cleanNumber(cols[18]),
+      joko_tingkir: cleanNumber(cols[19]),
+      bri: cleanNumber(cols[20]),
+      bkk_karangmalang: cleanNumber(cols[21]),
+      bjb: cleanNumber(cols[22]),
+      penerimaan_bersih: cleanNumber(cols[23])
+    });
+  }
+  
+  if (errorMsg) {
+    status.innerHTML = '<span style="color:red">' + errorMsg + '</span>';
+    return;
+  }
+  
+  // Gabungkan ke DB
+  existingDB[bulan] = employees;
+  
+  // Buat file JS Terstruktur
+  const jsContent = 'const GAJI_DB = ' + JSON.stringify(existingDB, null, 2) + ';';
+  const blob = new Blob([jsContent], { type: 'text/javascript' });
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'data-gaji.js';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  
+  status.innerHTML = `<span style="color:green; font-weight:bold; font-size:15px; padding: 10px; background: #e8f5e9; display:block; border-radius:5px;">✅ UNDUHAN BERHASIL!!<br>Data Gaji untuk '${bulan}' (${employees.length} Pegawai) telah masuk! Segera Timpa file "data-gaji.js" lama di folder web Anda dengan file baru ini.</span>`;
+}
+</script>
+</body>
+</html>

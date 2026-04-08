@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generator TPP - BPKPD Kabupaten Sragen</title>
+<style>
+  :root { --primary: #1a4f8a; --bg: #f4f7f6; --card: #fff; --text: #333; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 30px 20px; line-height: 1.6; }
+  .container { max-width: 900px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+  h1 { color: var(--primary); font-size: 22px; margin-bottom: 5px; }
+  p.sub { color: #666; margin-bottom: 20px; font-size: 13px; }
+  .form-group { margin-bottom: 18px; border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; background: #fafafa; }
+  label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: var(--primary); }
+  input[type="text"], input[type="file"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; max-width: 400px; background: white; }
+  textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; font-family: monospace; resize: vertical; min-height: 100px; white-space: pre; }
+  .btn { background: #27ae60; color: white; border: none; padding: 14px 24px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(39,174,96,0.3); width: 100%; }
+  .btn:hover { background: #219653; transform: translateY(-2px); }
+  .info { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 12px 15px; margin-bottom: 20px; border-radius: 4px; font-size: 13px; }
+  #status { margin-top: 20px; font-weight: bold; text-align: center; }
+  .badge { background: var(--primary); color: white; padding: 3px 8px; border-radius: 50%; font-size: 12px; margin-right: 5px; }
+  .col-ref { font-size: 12px; color: #d32f2f; background: #ffebee; padding: 8px 10px; border-radius: 6px; margin-top: 5px; font-family: monospace; }
+  .col-ref.p3k { color: #e65100; background: #fff3e0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📋 Generator Data TPP (Multi-Bulan)</h1>
+  <p class="sub">Paste data dari sheet "Potongan Internal" — ASN dan P3K punya kotak terpisah.</p>
+
+  <div class="info">
+    <strong>Cara Pakai:</strong><br>
+    1. Upload <code>data-tpp.js</code> lama (jika ada riwayat bulan sebelumnya).<br>
+    2. Ketik bulan TPP.<br>
+    3. Paste data <b>ASN</b> dari sheet Potongan Internal ASN (tanpa header).<br>
+    4. Paste data <b>P3K</b> dari sheet Potongan Internal P3K (<b>tambahkan kolom NIP &amp; PIN</b> di Excel-nya agar P3K bisa login).<br>
+    5. Tekan Download.
+  </div>
+
+  <div class="form-group">
+    <label><span class="badge">1</span> OPSIONAL: Gabungkan dengan data-tpp.js lama</label>
+    <input type="file" id="input-file-lama" accept=".js">
+    <div id="file-status" style="font-size:12px; font-weight:bold; margin-top:5px; color:#1976d2;">Belum ada riwayat</div>
+  </div>
+
+  <div class="form-group">
+    <label><span class="badge">2</span> Bulan TPP</label>
+    <input type="text" id="input-bulan" value="Maret 2026" placeholder="Contoh: Maret 2026">
+  </div>
+
+  <div class="form-group">
+    <label><span class="badge">3</span> Paste Data ASN (dari Potongan Internal ASN)</label>
+    <div class="col-ref">No | Nama | NO REK | TPP Kotor | Pot TPP | Penerimaan | Pot Koperasi | Matra | Zakat | Infaq | BPJS | Penerimaan Bersih</div>
+    <textarea id="input-asn" placeholder="Blok baris data ASN dari Excel, paste di sini..."></textarea>
+  </div>
+
+  <div class="form-group">
+    <label><span class="badge">4</span> Paste Data P3K (dari Potongan Internal P3K + kolom NIP & PIN)</label>
+    <div class="col-ref p3k">No | Nama | <b>NIP</b> | <b>PIN</b> | NO REK | TPP Kotor | Pot TPP | Penerimaan | Pot Koperasi | Matra | Zakat | Infaq | BPJS | Penerimaan Bersih</div>
+    <textarea id="input-p3k" placeholder="Blok baris data P3K dari Excel (sudah ditambah kolom NIP & PIN), paste di sini..."></textarea>
+  </div>
+
+  <button class="btn" onclick="generate()">⬇️ Download data-tpp.js</button>
+  <div id="status"></div>
+</div>
+
+<script>
+let existingDB = {};
+
+document.getElementById('input-file-lama').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      const isi = evt.target.result;
+      const json = isi.substring(isi.indexOf('{'), isi.lastIndexOf('}') + 1);
+      existingDB = JSON.parse(json);
+      document.getElementById('file-status').innerHTML = '✅ Riwayat dimuat: ' + Object.keys(existingDB).join(', ');
+      document.getElementById('file-status').style.color = "green";
+    } catch (err) {
+      document.getElementById('file-status').innerHTML = '❌ Gagal membaca file.';
+      document.getElementById('file-status').style.color = "red";
+    }
+  };
+  reader.readAsText(file);
+});
+
+function cleanNumber(val) {
+  if (typeof val === 'number') return val;
+  if (!val) return 0;
+  var str = val.toString().trim();
+  str = str.replace(/,(\d{1,2})$/, '');
+  str = str.replace(/\.(\d{1,2})$/, '');
+  str = str.replace(/\D/g, '');
+  var num = parseInt(str);
+  return isNaN(num) ? 0 : num;
+}
+
+function parseASN(text) {
+  if (!text.trim()) return [];
+  const lines = text.trim().split('\n');
+  const result = [];
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i].trim();
+    if (!raw) continue;
+    const c = raw.split('\t');
+    if (c.length < 5) continue;
+    result.push({
+      no: parseInt(cleanNumber(c[0])) || (i+1),
+      nama: (c[1] || "").trim(),
+      nip: "",
+      pin: "",
+      no_rek: (c[2] || "").trim(),
+      tpp_kotor: cleanNumber(c[3]),
+      pot_tpp: cleanNumber(c[4]),
+      penerimaan: cleanNumber(c[5]),
+      pot_koperasi: cleanNumber(c[6]),
+      matra: cleanNumber(c[7]),
+      zakat: cleanNumber(c[8]),
+      infaq: cleanNumber(c[9]),
+      bpjs: cleanNumber(c[10]),
+      penerimaan_bersih: cleanNumber(c[11])
+    });
+  }
+  return result;
+}
+
+function parseP3K(text) {
+  if (!text.trim()) return [];
+  const lines = text.trim().split('\n');
+  const result = [];
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i].trim();
+    if (!raw) continue;
+    const c = raw.split('\t');
+    if (c.length < 7) continue;
+    result.push({
+      no: parseInt(cleanNumber(c[0])) || (i+1),
+      nama: (c[1] || "").trim(),
+      nip: (c[2] || "").trim(),
+      pin: (c[3] || "").trim(),
+      no_rek: (c[4] || "").trim(),
+      tpp_kotor: cleanNumber(c[5]),
+      pot_tpp: cleanNumber(c[6]),
+      penerimaan: cleanNumber(c[7]),
+      pot_koperasi: cleanNumber(c[8]),
+      matra: cleanNumber(c[9]),
+      zakat: cleanNumber(c[10]),
+      infaq: cleanNumber(c[11]),
+      bpjs: cleanNumber(c[12]),
+      penerimaan_bersih: cleanNumber(c[13])
+    });
+  }
+  return result;
+}
+
+function generate() {
+  const bulan = document.getElementById('input-bulan').value.trim();
+  const asnText = document.getElementById('input-asn').value;
+  const p3kText = document.getElementById('input-p3k').value;
+  const status = document.getElementById('status');
+  
+  if (!bulan) { status.innerHTML = '<span style="color:red">Nama bulan wajib diisi!</span>'; return; }
+  if (!asnText.trim() && !p3kText.trim()) { status.innerHTML = '<span style="color:red">Minimal salah satu kotak (ASN / P3K) harus terisi!</span>'; return; }
+  
+  const asnData = parseASN(asnText);
+  const p3kData = parseP3K(p3kText);
+  const combined = [...asnData, ...p3kData];
+  
+  if (combined.length === 0) {
+    status.innerHTML = '<span style="color:red">Tidak ada data valid terbaca. Periksa format paste.</span>';
+    return;
+  }
+  
+  existingDB[bulan] = combined;
+  
+  const jsContent = 'const TPP_DB = ' + JSON.stringify(existingDB, null, 2) + ';';
+  const blob = new Blob([jsContent], { type: 'text/javascript' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'data-tpp.js';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  
+  status.innerHTML = `<span style="color:green; font-size:15px; padding:10px; background:#e8f5e9; display:block; border-radius:5px;">✅ Berhasil! TPP '${bulan}' — ${asnData.length} ASN + ${p3kData.length} P3K = ${combined.length} pegawai.<br>Timpa file data-tpp.js di folder web Anda.</span>`;
+}
+</script>
+</body>
+</html>

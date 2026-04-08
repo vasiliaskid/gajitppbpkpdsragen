@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Slip Gaji &amp; TPP — BPKPD Kabupaten Sragen</title>
+  <meta name="description" content="Portal informasi Slip Gaji dan TPP pegawai BPKPD Kabupaten Sragen">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    :root {
+      --navy: #1b3a5c;
+      --navy-dark: #132942;
+      --navy-light: #24537d;
+      --gold: #c9a84c;
+      --gold-muted: #b89a45;
+      --bg: #eef1f5;
+      --card: #fff;
+      --text: #2c3e50;
+      --text-secondary: #5a6c7e;
+      --border: #dce3eb;
+      --red: #b94a3f;
+      --green: #2e7d4f;
+      --green-bg: #edf7f0;
+      --red-bg: #fdf0ee;
+      --radius: 8px;
+    }
+
+    html {
+      font-size: 14px
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased
+    }
+
+    /* ======= HEADER ======= */
+    .header {
+      background: var(--navy);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-badge {
+      width: 38px;
+      height: 38px;
+      border: 2px solid var(--gold);
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      color: var(--gold);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      flex-shrink: 0;
+    }
+
+    .header h1 {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.3
+    }
+
+    .header p {
+      color: rgba(255, 255, 255, .55);
+      font-size: 11px;
+      margin-top: 1px;
+      font-weight: 400
+    }
+
+    /* ======= PAGE CONTAINER ======= */
+    .page {
+      display: none;
+      padding: 20px 16px;
+      max-width: 460px;
+      margin: 0 auto
+    }
+
+    .page.active {
+      display: block
+    }
+
+    /* ======= LOGIN ======= */
+    .login-wrap {
+      min-height: calc(100vh - 66px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 16px
+    }
+
+    .login-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 24px 28px;
+    }
+
+    .login-card h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 4px
+    }
+
+    .login-card .subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 24px
+    }
+
+    .form-group {
+      margin-bottom: 16px
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: .4px
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text);
+      background: #fafbfc;
+      transition: border-color .15s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--navy-light);
+      background: #fff
+    }
+
+    .pin-wrap {
+      position: relative
+    }
+
+    .pin-wrap .form-input {
+      padding-right: 44px
+    }
+
+    .pin-toggle {
+      position: absolute;
+      right: 1px;
+      top: 1px;
+      bottom: 1px;
+      width: 40px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 15px;
+      color: var(--text-secondary);
+      border-radius: 0 5px 5px 0;
+    }
+
+    .pin-toggle:hover {
+      background: var(--bg)
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 11px;
+      margin-top: 4px;
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background .15s;
+    }
+
+    .btn-login:hover {
+      background: var(--navy-dark)
+    }
+
+    .btn-login:active {
+      transform: scale(.99)
+    }
+
+    .error-msg {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: var(--red-bg);
+      color: var(--red);
+      font-size: 13px;
+      border-radius: 6px;
+      display: none;
+      border-left: 3px solid var(--red);
+    }
+
+    .error-msg.show {
+      display: block
+    }
+
+    .login-footer {
+      text-align: center;
+      padding: 20px 0 0;
+      font-size: 11px;
+      color: var(--text-secondary)
+    }
+
+    /* ======= SLIP PAGE ======= */
+    .slip-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .slip-topbar .user-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--navy)
+    }
+
+    .slip-topbar .user-nip {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 1px
+    }
+
+    .btn-logout {
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 500;
+      font-family: inherit;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .btn-logout:hover {
+      border-color: var(--red);
+      color: var(--red)
+    }
+
+    /* ======= TABS ======= */
+    .tabs {
+      display: flex;
+      gap: 2px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 0;
+      border: none;
+      background: transparent;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all .15s;
+    }
+
+    .tab-btn.active {
+      color: var(--navy);
+      border-bottom-color: var(--navy)
+    }
+
+    .tab-btn:hover:not(.active) {
+      color: var(--text)
+    }
+
+    /* ======= MONTH SELECTOR (inside tabs) ======= */
+    .month-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .month-bar label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .3px
+    }
+
+    .month-bar select {
+      flex: 1;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--text);
+      background: #fafbfc;
+    }
+
+    .month-bar select:focus {
+      outline: none;
+      border-color: var(--navy-light)
+    }
+
+    /* ======= SLIP CARD ======= */
+    .slip-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .slip-card-header {
+      background: var(--navy);
+      padding: 16px 20px 14px;
+      text-align: center;
+    }
+
+    .slip-instansi {
+      color: rgba(255, 255, 255, .65);
+      font-size: 10px;
+      letter-spacing: .3px;
+      line-height: 1.5
+    }
+
+    .slip-title {
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      margin: 6px 0 2px;
+      letter-spacing: .5px
+    }
+
+    .slip-bulan {
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 500
+    }
+
+    .slip-identity {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .identity-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 3px 0
+    }
+
+    .identity-row .label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      min-width: 90px
+    }
+
+    .identity-row .value {
+      font-size: 13px;
+      font-weight: 600;
+      text-align: right;
+      word-break: break-all
+    }
+
+    .slip-section {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 8px
+    }
+
+    .slip-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 4px 0
+    }
+
+    .slip-row .item {
+      font-size: 13px;
+      color: var(--text)
+    }
+
+    .slip-row .amount {
+      font-size: 13px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums
+    }
+
+    .slip-row .income {
+      color: var(--green)
+    }
+
+    .slip-row .deduct {
+      color: var(--red)
+    }
+
+    .slip-total {
+      padding: 14px 20px;
+      background: var(--green-bg)
+    }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .total-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--green)
+    }
+
+    .total-amount {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--green);
+      font-variant-numeric: tabular-nums
+    }
+
+    .btn-download {
+      width: 100%;
+      padding: 12px;
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background .15s;
+      margin-bottom: 8px;
+    }
+
+    .btn-download:hover {
+      background: var(--navy-dark)
+    }
+
+    .btn-download:active {
+      transform: scale(.99)
+    }
+
+    .msg-empty {
+      text-align: center;
+      padding: 36px 20px
+    }
+
+    .msg-empty .icon {
+      font-size: 28px;
+      margin-bottom: 10px;
+      opacity: .5
+    }
+
+    .msg-empty .title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px
+    }
+
+    .msg-empty .desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.5
+    }
+
+    .app-footer {
+      text-align: center;
+      padding: 12px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 4px
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="header">
+    <div class="header-badge">SG</div>
+    <div>
+      <h1>BPKPD Kabupaten Sragen</h1>
+      <p>Portal Slip Gaji &amp; TPP</p>
+    </div>
+  </header>
+
+  <!-- ===== LOGIN ===== -->
+  <div id="page-login" class="page active">
+    <div class="login-wrap">
+      <div class="login-card">
+        <h2>Masuk</h2>
+        <p class="subtitle">Masukkan NIP dan PIN untuk melihat slip Anda.</p>
+        <div class="form-group">
+          <label class="form-label">NIP</label>
+          <input type="text" id="input-nip" class="form-input" placeholder="Nomor Induk Pegawai" autocomplete="username"
+            inputmode="text">
+        </div>
+        <div class="form-group">
+          <label class="form-label">PIN</label>
+          <div class="pin-wrap">
+            <input type="password" id="input-pin" class="form-input" placeholder="PIN tanya Mbak Winda kalau belum tau"
+              maxlength="6" autocomplete="current-password" inputmode="numeric">
+            <button class="pin-toggle" onclick="togglePin()" id="pin-eye"
+              aria-label="Toggle PIN visibility">&#9673;</button>
+          </div>
+        </div>
+        <button class="btn-login" id="btn-login" onclick="doLogin()">Masuk</button>
+        <div class="error-msg" id="error-msg"></div>
+      </div>
+      <div class="login-footer">&copy; 2026 BPKPD Kabupaten Sragen</div>
+    </div>
+  </div>
+
+  <!-- ===== SLIP PAGE ===== -->
+  <div id="page-slip" class="page">
+    <div class="slip-topbar">
+      <div>
+        <div class="user-name" id="slip-nama-header">&mdash;</div>
+        <div class="user-nip" id="label-bulan-header"></div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">Keluar</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-gaji-btn" onclick="switchTab('gaji')">Slip Gaji</button>
+      <button class="tab-btn" id="tab-tpp-btn" onclick="switchTab('tpp')">Info TPP</button>
+    </div>
+
+    <!-- TAB GAJI -->
+    <div id="tab-gaji">
+      <div class="month-bar">
+        <label>Bulan</label>
+        <select id="input-bulan" class="form-input" onchange="loadGaji()">
+          <option value="">(Pilih bulan)</option>
+        </select>
+      </div>
+
+      <div id="gaji-content" style="display:none">
+        <div class="slip-card">
+          <div class="slip-card-header">
+            <div class="slip-instansi">Pemerintah Kabupaten Sragen</div>
+            <div class="slip-instansi">Badan Pengelolaan Keuangan dan Pendapatan Daerah</div>
+            <div class="slip-title">SLIP GAJI</div>
+            <div class="slip-bulan" id="label-bulan-slip"></div>
+          </div>
+          <div class="slip-identity">
+            <div class="identity-row"><span class="label">NIP</span><span class="value" id="slip-nip">&mdash;</span>
+            </div>
+            <div class="identity-row"><span class="label">Nama</span><span class="value" id="slip-nama">&mdash;</span>
+            </div>
+            <div class="identity-row"><span class="label">No. Rekening</span><span class="value"
+                id="slip-rek">&mdash;</span></div>
+          </div>
+          <div class="slip-section">
+            <div class="section-title">Penerimaan</div>
+            <div class="slip-row"><span class="item">Gaji Pokok</span><span class="amount income"
+                id="s-gaji">&mdash;</span></div>
+          </div>
+          <div class="slip-section">
+            <div class="section-title">Potongan</div>
+            <div id="potongan-list"></div>
+          </div>
+          <div class="slip-total">
+            <div class="total-row">
+              <span class="total-label">Penerimaan Bersih</span>
+              <span class="total-amount" id="s-bersih">&mdash;</span>
+            </div>
+          </div>
+        </div>
+        <button class="btn-download" onclick="downloadPDF()">Download PDF Slip Gaji</button>
+      </div>
+
+      <div id="gaji-empty" style="display:none">
+        <div class="msg-empty">
+          <div class="icon">—</div>
+          <div class="title">Data gaji tidak tersedia</div>
+          <div class="desc">Anda terdaftar sebagai pegawai P3K.<br>Silakan buka tab <b>Info TPP</b> untuk melihat slip
+            TPP Anda.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB TPP -->
+    <div id="tab-tpp" style="display:none">
+      <div class="month-bar">
+        <label>Bulan</label>
+        <select id="tpp-bulan" onchange="loadTPP()">
+          <option value="">(Pilih bulan)</option>
+        </select>
+      </div>
+
+      <div id="tpp-content" style="display:none">
+        <div class="slip-card">
+          <div class="slip-card-header">
+            <div class="slip-instansi">Pemerintah Kabupaten Sragen</div>
+            <div class="slip-instansi">Badan Pengelolaan Keuangan dan Pendapatan Daerah</div>
+            <div class="slip-title">SLIP TPP</div>
+            <div class="slip-bulan" id="tpp-bulan-label"></div>
+          </div>
+          <div class="slip-identity">
+            <div class="identity-row"><span class="label">No. Rekening</span><span class="value"
+                id="tpp-rek">&mdash;</span></div>
+            <div class="identity-row"><span class="label">Nama</span><span class="value" id="tpp-nama">&mdash;</span>
+            </div>
+          </div>
+          <div class="slip-section">
+            <div class="section-title">Penerimaan</div>
+            <div class="slip-row"><span class="item">TPP Kotor + BPJS 4%</span><span class="amount income"
+                id="tpp-kotor">&mdash;</span></div>
+          </div>
+          <div class="slip-section">
+            <div class="section-title">Potongan</div>
+            <div id="tpp-potongan-list"></div>
+          </div>
+          <div class="slip-total">
+            <div class="total-row">
+              <span class="total-label">Penerimaan Bersih</span>
+              <span class="total-amount" id="tpp-bersih">&mdash;</span>
+            </div>
+          </div>
+        </div>
+        <button class="btn-download" onclick="downloadTPPPDF()">Download PDF Slip TPP</button>
+      </div>
+
+      <div id="tpp-empty" style="display:none">
+        <div class="msg-empty">
+          <div class="icon">—</div>
+          <div class="title">Data TPP tidak tersedia</div>
+          <div class="desc">Data TPP Anda untuk bulan ini belum tersedia di sistem.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="app-footer">&copy; 2026 BPKPD Kabupaten Sragen &middot; Data bersifat rahasia</div>
+  </div>
+
+  <!-- ===== APP LOGIC ===== -->
+  <script src="data-gaji.js"></script>
+  <script src="data-tpp.js"></script>
+  <script>
+    let currentEmployee = null;
+    let APP_MONTH = "";
+
+    function fmt(n) {
+      if (!n || n === 0) return 'Rp 0';
+      return 'Rp ' + Math.round(n).toLocaleString('id-ID');
+    }
+
+    function togglePin() {
+      const inp = document.getElementById('input-pin');
+      const eye = document.getElementById('pin-eye');
+      if (inp.type === 'password') { inp.type = 'text'; eye.innerHTML = '&#9675;'; }
+      else { inp.type = 'password'; eye.innerHTML = '&#9673;'; }
+    }
+
+    // ============================================================
+    // LOGIN — cek GAJI_DB lalu TPP_DB
+    // ============================================================
+    function doLogin() {
+      const nip = document.getElementById('input-nip').value.trim();
+      const pin = document.getElementById('input-pin').value.trim();
+      const err = document.getElementById('error-msg');
+
+      if (!nip || !pin) { err.textContent = 'NIP dan PIN wajib diisi.'; err.classList.add('show'); return; }
+
+      let emp = null;
+      let isTPPOnly = false;
+
+      // 1. Cek seluruh bulan di GAJI_DB
+      if (typeof GAJI_DB !== 'undefined') {
+        for (const m of Object.keys(GAJI_DB)) {
+          const found = GAJI_DB[m].find(e => e.nip === nip && e.pin === pin);
+          if (found) { emp = found; break; }
+        }
+      }
+
+      // 2. Jika tidak ada di gaji, cek TPP_DB (untuk P3K)
+      if (!emp && typeof TPP_DB !== 'undefined') {
+        for (const m of Object.keys(TPP_DB)) {
+          const found = TPP_DB[m].find(t => t.nip && t.nip.toString().trim() === nip && t.pin && t.pin.toString().trim() === pin);
+          if (found) {
+            emp = { nip: found.nip, pin: found.pin, nama: found.nama, no_rek: found.no_rek, gaji: 0, penerimaan_bersih: 0, _tppOnly: true };
+            isTPPOnly = true;
+            break;
+          }
+        }
+      }
+
+      if (!emp) { err.textContent = 'NIP atau PIN tidak ditemukan.'; err.classList.add('show'); document.getElementById('input-pin').value = ''; return; }
+
+      err.classList.remove('show');
+      currentEmployee = emp;
+
+      // Header slip page
+      document.getElementById('slip-nama-header').textContent = emp.nama.split(',')[0];
+      document.getElementById('label-bulan-header').textContent = 'NIP ' + emp.nip;
+
+      // Populate bulan gaji dropdown (di dalam tab, bukan di login)
+      populateGajiMonths(nip, pin, isTPPOnly);
+      populateTPPMonths();
+
+      document.getElementById('page-login').classList.remove('active');
+      document.getElementById('page-slip').classList.add('active');
+
+      if (isTPPOnly) {
+        switchTab('tpp');
+      } else {
+        switchTab('gaji');
+      }
+    }
+
+    document.getElementById('input-pin').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    document.getElementById('input-nip').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('input-pin').focus(); });
+
+    // ============================================================
+    // POPULATE GAJI MONTHS — setelah login
+    // ============================================================
+    function populateGajiMonths(nip, pin, isTPPOnly) {
+      const sel = document.getElementById('input-bulan');
+      sel.innerHTML = '';
+
+      if (isTPPOnly) {
+        sel.innerHTML = '<option value="">(Tidak ada data gaji)</option>';
+        document.getElementById('gaji-content').style.display = 'none';
+        document.getElementById('gaji-empty').style.display = 'block';
+        return;
+      }
+
+      if (typeof GAJI_DB === 'undefined' || Object.keys(GAJI_DB).length === 0) {
+        sel.innerHTML = '<option value="">(Belum ada data)</option>';
+        return;
+      }
+
+      // Cari bulan mana saja yang ada data pegawai ini
+      let availableMonths = [];
+      Object.keys(GAJI_DB).forEach(m => {
+        const found = GAJI_DB[m].find(e => e.nip === nip && e.pin === pin);
+        if (found) availableMonths.push(m);
+      });
+
+      if (availableMonths.length === 0) {
+        sel.innerHTML = '<option value="">(Tidak ada data gaji)</option>';
+        document.getElementById('gaji-content').style.display = 'none';
+        document.getElementById('gaji-empty').style.display = 'block';
+        return;
+      }
+
+      sel.innerHTML = '<option value="">(Pilih bulan)</option>';
+      availableMonths.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m; opt.textContent = m;
+        sel.appendChild(opt);
+      });
+
+      // Auto-pilih bulan terakhir & load
+      sel.value = availableMonths[availableMonths.length - 1];
+      loadGaji();
+    }
+
+    // ============================================================
+    // LOAD GAJI — dipanggil saat dropdown bulan berubah
+    // ============================================================
+    function loadGaji() {
+      const bulan = document.getElementById('input-bulan').value;
+      const contentDiv = document.getElementById('gaji-content');
+      const emptyDiv = document.getElementById('gaji-empty');
+
+      if (!bulan || !currentEmployee) { contentDiv.style.display = 'none'; emptyDiv.style.display = 'none'; return; }
+
+      const emp = GAJI_DB[bulan].find(e => e.nip === currentEmployee.nip && e.pin === currentEmployee.pin);
+      if (!emp) { contentDiv.style.display = 'none'; emptyDiv.style.display = 'block'; return; }
+
+      currentEmployee = emp;
+      APP_MONTH = bulan;
+
+      document.getElementById('label-bulan-slip').textContent = bulan;
+      document.getElementById('slip-nip').textContent = emp.nip;
+      document.getElementById('slip-nama').textContent = emp.nama;
+      document.getElementById('slip-rek').textContent = emp.no_rek;
+      document.getElementById('s-gaji').textContent = fmt(emp.gaji);
+      document.getElementById('s-bersih').textContent = fmt(emp.penerimaan_bersih);
+
+      const potonganFields = [
+        { key: 'pot_bank_jateng', label: 'Bank Jateng' }, { key: 'dplk', label: 'DPLK' },
+        { key: 'pot_bppkad', label: 'Potongan BPPKAD' }, { key: 'korpri', label: 'Iuran KORPRI' },
+        { key: 'dh_wanita', label: 'Iuran Dh. Wanita' }, { key: 'sosial_bppkad', label: 'Sosial BPKPD' },
+        { key: 'beras', label: 'Beras' }, { key: 'zakat', label: 'Zakat' },
+        { key: 'besukan_tu', label: 'Besukan TU' }, { key: 'pmi', label: 'PMI' },
+        { key: 'kop_sedya_rhy', label: 'Koperasi Sedya Rhy' }, { key: 'kop_perdagangan', label: 'Kop. Perdagangan' },
+        { key: 'bkk_gesi', label: 'BKK Gesi' }, { key: 'joko_tingkir', label: 'Joko Tingkir' },
+        { key: 'bri', label: 'BRI' }, { key: 'bkk_karangmalang', label: 'BKK Karangmalang' },
+        { key: 'bjb', label: 'BJB' },
+      ];
+
+      const list = document.getElementById('potongan-list');
+      list.innerHTML = '';
+      let has = false;
+      potonganFields.forEach(f => {
+        const v = emp[f.key];
+        if (v && v > 0) { has = true; list.innerHTML += `<div class="slip-row"><span class="item">${f.label}</span><span class="amount deduct">${fmt(v)}</span></div>`; }
+      });
+      if (!has) list.innerHTML = '<div class="slip-row"><span class="item" style="color:var(--text-secondary)">Tidak ada potongan</span></div>';
+
+      contentDiv.style.display = 'block';
+      emptyDiv.style.display = 'none';
+    }
+
+    // ============================================================
+    // LOGOUT & TAB
+    // ============================================================
+    function doLogout() {
+      currentEmployee = null;
+      document.getElementById('input-nip').value = '';
+      document.getElementById('input-pin').value = '';
+      document.getElementById('page-slip').classList.remove('active');
+      document.getElementById('page-login').classList.add('active');
+      document.getElementById('gaji-content').style.display = 'none';
+      document.getElementById('gaji-empty').style.display = 'none';
+      document.getElementById('tpp-content').style.display = 'none';
+      document.getElementById('tpp-empty').style.display = 'none';
+      switchTab('gaji');
+    }
+
+    function switchTab(tab) {
+      document.getElementById('tab-gaji').style.display = tab === 'gaji' ? 'block' : 'none';
+      document.getElementById('tab-tpp').style.display = tab === 'tpp' ? 'block' : 'none';
+      document.getElementById('tab-gaji-btn').classList.toggle('active', tab === 'gaji');
+      document.getElementById('tab-tpp-btn').classList.toggle('active', tab === 'tpp');
+    }
+
+    // ============================================================
+    // PDF GAJI
+    // ============================================================
+    function downloadPDF() {
+      const emp = currentEmployee;
+      if (!emp) return;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a5' });
+      const W = 148;
+      let y = 0;
+
+      doc.setFillColor(27, 58, 92);
+      doc.rect(0, 0, W, 35, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'normal');
+      doc.text('PEMERINTAH KABUPATEN SRAGEN', W / 2, 8, { align: 'center' });
+      doc.text('BADAN PENGELOLAAN KEUANGAN DAN PENDAPATAN DAERAH', W / 2, 13, { align: 'center' });
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('SLIP GAJI', W / 2, 22, { align: 'center' });
+      let textBulan = APP_MONTH;
+      if (!textBulan.toLowerCase().includes('bulan')) textBulan = 'Bulan ' + textBulan;
+      if (!/\d{4}/.test(textBulan)) textBulan += ' ' + new Date().getFullYear();
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text(textBulan, W / 2, 29, { align: 'center' });
+
+      y = 40;
+      doc.setTextColor(44, 62, 80);
+      doc.setFillColor(238, 241, 245);
+      doc.rect(10, y, W - 20, 22, 'F');
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text('NIP', 14, y + 6); doc.text(':', 38, y + 6);
+      doc.setFont('helvetica', 'bold'); doc.text(emp.nip, 42, y + 6);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Nama', 14, y + 12); doc.text(':', 38, y + 12);
+      doc.setFont('helvetica', 'bold'); doc.text(emp.nama, 42, y + 12, { maxWidth: W - 55 });
+      doc.setFont('helvetica', 'normal');
+      doc.text('No. Rekening', 14, y + 18); doc.text(':', 38, y + 18);
+      doc.setFont('helvetica', 'bold'); doc.text(emp.no_rek, 42, y + 18);
+
+      y = 68;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(90, 108, 126);
+      doc.text('PENERIMAAN', 10, y); y += 4;
+      doc.setDrawColor(220, 227, 235); doc.line(10, y, W - 10, y); y += 5;
+      doc.setTextColor(44, 62, 80); doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+      doc.text('Gaji Pokok', 12, y);
+      doc.setFont('helvetica', 'bold'); doc.setTextColor(46, 125, 79);
+      doc.text(fmt(emp.gaji), W - 12, y, { align: 'right' }); y += 7;
+
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(90, 108, 126);
+      doc.text('POTONGAN', 10, y); y += 4;
+      doc.setDrawColor(220, 227, 235); doc.line(10, y, W - 10, y); y += 5;
+
+      const pf = [
+        { key: 'pot_bank_jateng', label: 'Bank Jateng' }, { key: 'dplk', label: 'DPLK' },
+        { key: 'pot_bppkad', label: 'Potongan BPPKAD' }, { key: 'korpri', label: 'Iuran KORPRI' },
+        { key: 'dh_wanita', label: 'Iuran Dh. Wanita' }, { key: 'sosial_bppkad', label: 'Sosial BPKPD' },
+        { key: 'beras', label: 'Beras' }, { key: 'zakat', label: 'Zakat' },
+        { key: 'besukan_tu', label: 'Besukan TU' }, { key: 'pmi', label: 'PMI' },
+        { key: 'kop_sedya_rhy', label: 'Kop. Sedya Rhy' }, { key: 'kop_perdagangan', label: 'Kop. Perdagangan' },
+        { key: 'bkk_gesi', label: 'BKK Gesi' }, { key: 'joko_tingkir', label: 'Joko Tingkir' },
+        { key: 'bri', label: 'BRI' }, { key: 'bkk_karangmalang', label: 'BKK Karangmalang' },
+        { key: 'bjb', label: 'BJB' },
+      ];
+      doc.setFontSize(8);
+      pf.forEach(f => {
+        const v = emp[f.key];
+        if (v && v > 0) {
+          doc.setFont('helvetica', 'normal'); doc.setTextColor(44, 62, 80); doc.text(f.label, 12, y);
+          doc.setFont('helvetica', 'bold'); doc.setTextColor(185, 74, 63); doc.text(fmt(v), W - 12, y, { align: 'right' });
+          y += 6;
+        }
+      });
+
+      y += 2;
+      doc.setFillColor(237, 247, 240); doc.rect(10, y, W - 20, 12, 'F');
+      doc.setFillColor(46, 125, 79); doc.rect(10, y, 2, 12, 'F');
+      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(46, 125, 79);
+      doc.text('PENERIMAAN BERSIH', 16, y + 5);
+      doc.setFontSize(11); doc.text(fmt(emp.penerimaan_bersih), W - 12, y + 7, { align: 'right' });
+
+      y += 18;
+      doc.setFontSize(7); doc.setTextColor(90, 108, 126); doc.setFont('helvetica', 'normal');
+      doc.text('Dokumen ini diterbitkan secara elektronik oleh BPKPD Kabupaten Sragen', W / 2, y, { align: 'center' });
+      doc.text('\u00a9 2026 - Data bersifat rahasia', W / 2, y + 4, { align: 'center' });
+
+      doc.save(`SlipGaji_${emp.nip}_${APP_MONTH.replace(/\s+/g, '')}.pdf`);
+    }
+
+    // ============================================================
+    // TPP FUNCTIONS
+    // ============================================================
+    let currentTPP = null;
+    let TPP_MONTH = "";
+
+    function populateTPPMonths() {
+      const sel = document.getElementById('tpp-bulan');
+      sel.innerHTML = '<option value="">(Pilih bulan)</option>';
+      if (typeof TPP_DB === 'undefined' || Object.keys(TPP_DB).length === 0) {
+        sel.innerHTML = '<option value="">(Data TPP belum tersedia)</option>';
+        return;
+      }
+      const noRek = currentEmployee ? currentEmployee.no_rek.toString().trim() : '';
+      let hasData = false;
+      Object.keys(TPP_DB).forEach(m => {
+        const found = TPP_DB[m].find(t => t.no_rek.toString().trim() === noRek);
+        if (found) {
+          hasData = true;
+          const opt = document.createElement('option');
+          opt.value = m; opt.textContent = m;
+          sel.appendChild(opt);
+        }
+      });
+      if (!hasData) sel.innerHTML = '<option value="">(Tidak ada data TPP untuk Anda)</option>';
+      // Auto-select jika hanya 1 bulan
+      if (hasData && sel.options.length === 2) { sel.selectedIndex = 1; loadTPP(); }
+    }
+
+    function loadTPP() {
+      const bulan = document.getElementById('tpp-bulan').value;
+      const contentDiv = document.getElementById('tpp-content');
+      const emptyDiv = document.getElementById('tpp-empty');
+      if (!bulan || !currentEmployee) { contentDiv.style.display = 'none'; emptyDiv.style.display = 'none'; return; }
+      const noRek = currentEmployee.no_rek.toString().trim();
+      const tpp = TPP_DB[bulan].find(t => t.no_rek.toString().trim() === noRek);
+      if (!tpp) { contentDiv.style.display = 'none'; emptyDiv.style.display = 'block'; return; }
+
+      currentTPP = tpp; TPP_MONTH = bulan;
+      document.getElementById('tpp-bulan-label').textContent = bulan;
+      document.getElementById('tpp-rek').textContent = tpp.no_rek;
+      document.getElementById('tpp-nama').textContent = tpp.nama;
+      document.getElementById('tpp-kotor').textContent = fmt(tpp.tpp_kotor);
+      document.getElementById('tpp-bersih').textContent = fmt(tpp.penerimaan_bersih);
+
+      const potList = document.getElementById('tpp-potongan-list');
+      potList.innerHTML = '';
+      const fields = [
+        { key: 'pot_tpp', label: 'BPJS dan PPh' }, { key: 'pot_koperasi', label: 'Koperasi Sedyo Rahayu' },
+        { key: 'matra', label: 'Matra' }, { key: 'zakat', label: 'Zakat' },
+        { key: 'infaq', label: 'Infaq' }, { key: 'bpjs', label: 'BPJS' },
+      ];
+      let has = false;
+      fields.forEach(f => {
+        const v = tpp[f.key];
+        if (v && v > 0) { has = true; potList.innerHTML += `<div class="slip-row"><span class="item">${f.label}</span><span class="amount deduct">${fmt(v)}</span></div>`; }
+      });
+      if (!has) potList.innerHTML = '<div class="slip-row"><span class="item" style="color:var(--text-secondary)">Tidak ada potongan</span></div>';
+      contentDiv.style.display = 'block';
+      emptyDiv.style.display = 'none';
+    }
+
+    // ============================================================
+    // PDF TPP
+    // ============================================================
+    function downloadTPPPDF() {
+      const tpp = currentTPP;
+      if (!tpp) return;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a5' });
+      const W = 148; let y = 0;
+
+      doc.setFillColor(27, 58, 92); doc.rect(0, 0, W, 35, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(7); doc.setFont('helvetica', 'normal');
+      doc.text('PEMERINTAH KABUPATEN SRAGEN', W / 2, 8, { align: 'center' });
+      doc.text('BADAN PENGELOLAAN KEUANGAN DAN PENDAPATAN DAERAH', W / 2, 13, { align: 'center' });
+      doc.setFontSize(12); doc.setFont('helvetica', 'bold');
+      doc.text('SLIP TPP', W / 2, 22, { align: 'center' });
+      let tBulan = TPP_MONTH;
+      if (!tBulan.toLowerCase().includes('bulan')) tBulan = 'Bulan ' + tBulan;
+      if (!/\d{4}/.test(tBulan)) tBulan += ' ' + new Date().getFullYear();
+      doc.setFontSize(8); doc.setFont('helvetica', 'normal');
+      doc.text(tBulan, W / 2, 29, { align: 'center' });
+
+      y = 40;
+      doc.setTextColor(44, 62, 80); doc.setFillColor(238, 241, 245);
+      doc.rect(10, y, W - 20, 16, 'F');
+      doc.setFontSize(8); doc.setFont('helvetica', 'normal');
+      doc.text('No. Rekening', 14, y + 6); doc.text(':', 42, y + 6);
+      doc.setFont('helvetica', 'bold'); doc.text(tpp.no_rek.toString(), 46, y + 6);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Nama', 14, y + 12); doc.text(':', 42, y + 12);
+      doc.setFont('helvetica', 'bold'); doc.text(tpp.nama, 46, y + 12, { maxWidth: W - 58 });
+
+      y = 62;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(90, 108, 126);
+      doc.text('PENERIMAAN', 10, y); y += 4;
+      doc.setDrawColor(220, 227, 235); doc.line(10, y, W - 10, y); y += 5;
+      doc.setTextColor(44, 62, 80); doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+      doc.text('TPP Kotor + BPJS 4%', 12, y);
+      doc.setFont('helvetica', 'bold'); doc.setTextColor(46, 125, 79);
+      doc.text(fmt(tpp.tpp_kotor), W - 12, y, { align: 'right' }); y += 7;
+
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(90, 108, 126);
+      doc.text('POTONGAN', 10, y); y += 4;
+      doc.setDrawColor(220, 227, 235); doc.line(10, y, W - 10, y); y += 5;
+
+      const fields = [
+        { key: 'pot_tpp', label: 'BPJS dan PPh' }, { key: 'pot_koperasi', label: 'Koperasi Sedyo Rahayu' },
+        { key: 'matra', label: 'Matra' }, { key: 'zakat', label: 'Zakat' },
+        { key: 'infaq', label: 'Infaq' }, { key: 'bpjs', label: 'BPJS' },
+      ];
+      doc.setFontSize(8);
+      fields.forEach(f => {
+        const v = tpp[f.key];
+        if (v && v > 0) {
+          doc.setFont('helvetica', 'normal'); doc.setTextColor(44, 62, 80); doc.text(f.label, 12, y);
+          doc.setFont('helvetica', 'bold'); doc.setTextColor(185, 74, 63); doc.text(fmt(v), W - 12, y, { align: 'right' });
+          y += 6;
+        }
+      });
+
+      y += 2;
+      doc.setFillColor(237, 247, 240); doc.rect(10, y, W - 20, 12, 'F');
+      doc.setFillColor(46, 125, 79); doc.rect(10, y, 2, 12, 'F');
+      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(46, 125, 79);
+      doc.text('PENERIMAAN BERSIH', 16, y + 5);
+      doc.setFontSize(11); doc.text(fmt(tpp.penerimaan_bersih), W - 12, y + 7, { align: 'right' });
+
+      y += 18;
+      doc.setFontSize(7); doc.setTextColor(90, 108, 126); doc.setFont('helvetica', 'normal');
+      doc.text('Dokumen ini diterbitkan secara elektronik oleh BPKPD Kabupaten Sragen', W / 2, y, { align: 'center' });
+      doc.text('\u00a9 2026 - Data bersifat rahasia', W / 2, y + 4, { align: 'center' });
+
+      doc.save(`SlipTPP_${tpp.no_rek}_${TPP_MONTH.replace(/\s+/g, '')}.pdf`);
+    }
+  </script>
+</body>
+
+</html>
