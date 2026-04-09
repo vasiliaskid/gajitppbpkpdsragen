@@ -39,13 +39,15 @@
     .err-msg.show{display:block}
 
     /* ── LAYOUT ── */
-    .app{display:none;min-height:100vh}
+    .app{display:none;min-height:100vh;position:relative}
     .app.show{display:flex}
-    .sidebar{width:var(--sidebar);background:var(--navy-bg);min-height:100vh;flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50}
-    .sidebar-logo{padding:20px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
-    .sidebar-logo .badge{width:36px;height:36px;border:2px solid var(--gold);border-radius:6px;display:inline-grid;place-items:center;color:var(--gold);font-size:14px;font-weight:700;margin-right:10px;vertical-align:middle}
-    .sidebar-logo span{color:#fff;font-size:13px;font-weight:600;vertical-align:middle}
-    .sidebar-logo .sub{display:block;color:rgba(255,255,255,.4);font-size:10px;margin-top:2px;margin-left:46px}
+    .sidebar{width:var(--sidebar);background:var(--navy-bg);min-height:100vh;flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;transition:transform .3s ease;}
+    .sidebar-logo{padding:20px 16px;border-bottom:1px solid rgba(255,255,255,.08); display:flex; align-items:center}
+    .sidebar-logo .badge{width:36px;height:36px;border:2px solid var(--gold);border-radius:6px;display:inline-grid;place-items:center;color:var(--gold);font-size:14px;font-weight:700;margin-right:10px;}
+    .sidebar-logo .text-wrap{display:flex;flex-direction:column}
+    .sidebar-logo span.title{color:#fff;font-size:13px;font-weight:600;}
+    .sidebar-logo span.sub{color:rgba(255,255,255,.4);font-size:10px;margin-top:2px;}
+    
     .nav-group{padding:16px 0 8px}
     .nav-label{padding:0 16px 6px;font-size:10px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.8px}
     .nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:rgba(255,255,255,.6);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;border-left:3px solid transparent;margin:1px 0}
@@ -57,11 +59,13 @@
     .btn-signout:hover{background:rgba(185,74,63,.3);color:#ff8a80}
 
     /* ── MAIN ── */
-    .main{margin-left:var(--sidebar);flex:1;min-height:100vh;display:flex;flex-direction:column}
-    .topbar{background:#fff;border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40}
+    .main{margin-left:var(--sidebar);flex:1;min-height:100vh;display:flex;flex-direction:column;width: calc(100% - var(--sidebar));}
+    .topbar{background:#fff;border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:-webkit-sticky;position:sticky;top:0;z-index:40}
+    .topbar-left{display:flex;align-items:center;}
+    .menu-toggle{display:none;font-size:24px;color:var(--navy);margin-right:16px;cursor:pointer;}
     .topbar h2{font-size:16px;font-weight:700;color:var(--navy)}
     .topbar .badge-admin{background:var(--blue-bg);color:var(--blue);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
-    .content{padding:24px;flex:1}
+    .content{padding:24px;flex:1;overflow-x:hidden;}
 
     /* ── CARDS ── */
     .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px}
@@ -78,13 +82,13 @@
 
     /* ── IMPORT FORM ── */
     .import-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-    .col-ref{background:#ffebee;border:1px solid #ffcdd2;border-radius:6px;padding:12px;font-size:11px;color:#c62828;font-family:monospace;line-height:1.8;margin-bottom:16px}
+    .col-ref{background:#ffebee;border:1px solid #ffcdd2;border-radius:6px;padding:12px;font-size:11px;color:#c62828;font-family:monospace;line-height:1.8;margin-bottom:16px;overflow-x:auto;}
     textarea.paste-area{width:100%;padding:12px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:monospace;resize:vertical;min-height:180px;background:#fafbfc;line-height:1.5}
     textarea.paste-area:focus{outline:none;border-color:var(--navy-light)}
     .btn-import{padding:12px 24px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:8px}
     .btn-import:hover{background:#1b5e20}
     .btn-import:disabled{opacity:.6;cursor:not-allowed}
-    .status-box{margin-top:14px;padding:12px 16px;border-radius:6px;font-size:13px;font-weight:600;display:none}
+    .status-box{margin-top:14px;padding:12px 16px;border-radius:6px;font-size:13px;font-weight:600;display:none; white-space:pre-wrap;}
     .status-box.show{display:block}
     .status-box.success{background:var(--green-bg);color:var(--green);border-left:4px solid var(--green)}
     .status-box.error{background:var(--red-bg);color:var(--red);border-left:4px solid var(--red)}
@@ -110,8 +114,6 @@
     .user-table tr:hover td{background:#fafbfc}
     .badge-asn{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;background:var(--blue-bg);color:var(--blue)}
     .badge-p3k{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;background:var(--orange-bg);color:var(--orange)}
-    .badge-active{color:var(--green);font-weight:600}
-    .badge-inactive{color:var(--red);font-weight:600}
     .pin-field{font-family:monospace;font-size:12px;background:#f5f7fa;padding:2px 6px;border-radius:4px;cursor:pointer;letter-spacing:1px}
     .action-btns{display:flex;gap:6px}
     .btn-sm{padding:5px 10px;border:1px solid;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
@@ -136,9 +138,10 @@
     .btn-modal-close{flex:1;padding:10px;border:1px solid var(--border);background:#fff;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
     .btn-modal-close:hover{background:var(--bg)}
 
-    /* ── LOADING ── */
+    /* ── LOADING & OVERLAYS ── */
     .overlay{position:fixed;inset:0;background:rgba(255,255,255,.7);display:none;place-items:center;z-index:999;backdrop-filter:blur(2px)}
     .overlay.show{display:grid}
+    .sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:45;display:none;}
     .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -151,17 +154,23 @@
     /* ── RESPONSIVE ── */
     @media(max-width:768px){
       :root{--sidebar:0px}
-      .sidebar{display:none}
-      .main{margin-left:0}
+      .sidebar{transform:translateX(-100%); width:260px; box-shadow:4px 0 15px rgba(0,0,0,.3);}
+      .sidebar.show{transform:translateX(0);}
+      .sidebar-overlay.show{display:block;}
+      .main{margin-left:0; width:100%;}
+      .menu-toggle{display:block;}
       .import-row{grid-template-columns:1fr}
+      .topbar{padding:14px 16px;}
+      .content{padding:16px;}
+      .card{padding:16px;}
     }
   </style>
 </head>
 <body>
 
-  <!-- LOADING -->
   <div class="overlay" id="overlay"><div class="spinner"></div></div>
   <div class="toast" id="toast"></div>
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
 
   <!-- MODAL DETAIL USER -->
   <div class="modal-overlay" id="user-modal">
@@ -199,16 +208,24 @@
   <!-- APP -->
   <div class="app" id="app">
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="sidebar-logo">
         <span class="badge">SG</span>
-        <span>BPKPD Sragen</span>
-        <span class="sub">Admin Dashboard</span>
+        <div class="text-wrap">
+          <span class="title">BPKPD Sragen</span>
+          <span class="sub">Admin Dashboard</span>
+        </div>
       </div>
       <nav>
         <div class="nav-group">
-          <div class="nav-label">Import Data</div>
-          <div class="nav-item active" id="nav-gaji" onclick="showPanel('gaji')">
+          <div class="nav-label">Pegawai</div>
+          <div class="nav-item active" id="nav-master" onclick="showPanel('master')">
+            <span class="icon">👥</span> Master Pegawai
+          </div>
+        </div>
+        <div class="nav-group">
+          <div class="nav-label">Import Data Bulanan</div>
+          <div class="nav-item" id="nav-gaji" onclick="showPanel('gaji')">
             <span class="icon">📥</span> Gaji ASN
           </div>
           <div class="nav-item" id="nav-tpp-asn" onclick="showPanel('tpp-asn')">
@@ -221,7 +238,7 @@
         <div class="nav-group">
           <div class="nav-label">Manajemen</div>
           <div class="nav-item" id="nav-users" onclick="showPanel('users')">
-            <span class="icon">👥</span> User / Pegawai
+            <span class="icon">⚙️</span> Kelola Akun
           </div>
         </div>
       </nav>
@@ -233,47 +250,80 @@
     <!-- Main -->
     <main class="main">
       <div class="topbar">
-        <h2 id="topbar-title">Import Gaji ASN</h2>
+        <div class="topbar-left">
+          <span class="menu-toggle" onclick="toggleSidebar(true)">☰</span>
+          <h2 id="topbar-title">Import Master Pegawai</h2>
+        </div>
         <span class="badge-admin">👨‍💼 Admin</span>
       </div>
       <div class="content">
 
-        <!-- ══ PANEL: IMPORT GAJI ASN ══ -->
-        <div class="panel active" id="panel-gaji">
+        <!-- ══ PANEL: IMPORT MASTER PEGAWAI ══ -->
+        <div class="panel active" id="panel-master">
           <div class="card">
-            <div class="card-title">Import Data Gaji ASN</div>
-            <div class="card-sub">Copy-paste dari Master Excel Gaji ASN per bulan</div>
+            <div class="card-title">Import Master Pegawai</div>
+            <div class="card-sub">Sekali upload untuk menyimpan data dasar pegawai. Update NIP, PIN, dan Rekening.</div>
             <div class="info-box">
-              <strong>Cara pakai:</strong> Pilih bulan, lalu blok seluruh baris data di Excel (mulai baris data pertama, TANPA baris header), kemudian paste ke kotak di bawah.<br>
-              <strong>NIP dan PIN</strong> dari kolom Excel akan otomatis didaftarkan/diperbarui di sistem.
+              <strong>Info:</strong> Import Excel Master ini hanya untuk mendaftarkan atau mengupdate akun pegawai. Anda tidak perlu menyertakan NIP dan PIN lagi saat import data Gaji/TPP bulanan.
             </div>
+            <div class="col-ref">
+              <strong>Susunan Kolom Excel:</strong><br>
+              No | Nama | NIP | PIN Default | No Rek | Tipe Pegawai (ASN / P3K)
+            </div>
+            <label class="form-label">Paste Data Excel Master</label>
+            <textarea class="paste-area" id="master-paste" placeholder="Paste data Excel di sini (Ctrl+V)..." oninput="previewMaster()"></textarea>
+            <div id="master-preview"></div>
+            <br>
+            <button class="btn-import" id="btn-import-master" onclick="importMaster()">📤 Simpan Master Pegawai</button>
+            <div class="status-box" id="master-status"></div>
+          </div>
+        </div>
+
+        <!-- ══ PANEL: IMPORT GAJI ASN ══ -->
+        <div class="panel" id="panel-gaji">
+          <div class="card">
+            <div class="card-title">Import Data Gaji ASN Bulanan</div>
+            <div class="card-sub">Lakukan penggabungan 2 Sheet Excel Gaji</div>
+            <div class="info-box">
+              Pastikan Anda sudah mengupload <strong>Master Pegawai</strong> agar sistem dapat mengenali Nama/No Rek pada data di bawah, dan secara otomatis mencari NIP pegawai.
+            </div>
+            
             <div class="import-row">
               <div class="form-group" style="margin:0">
-                <label class="form-label">Bulan (contoh: April 2026)</label>
+                <label class="form-label">Bulan Gaji (contoh: April 2026)</label>
                 <input type="text" id="gaji-bulan" class="form-input" placeholder="April 2026">
               </div>
             </div>
-            <div class="col-ref">
-              Susunan Kolom Excel:<br>
-              No | Nama | NIP | PIN | No Rek | Gaji Pokok | Bank Jateng | DPLK | Pot BPPKAD | Korpri | Dh Wanita | Sosial BPKPD | Beras | Zakat | Besukan TU | PMI | Kop Sedya Rhy | Kop Perdagangan | BKK Gesi | Joko Tingkir | BRI | BKK K.Malang | BJB | Penerimaan Bersih
+
+            <div class="import-row">
+              <div>
+                <label class="form-label">Sheet 1: GAJI BRUTO</label>
+                <div class="col-ref" style="font-size:10px; padding:8px;">
+                  NO | NAMA | NO REK | GAJI BRUTO | Bank Jateng | DPLK | BRI | BKK KARANGMALANG | BPR DJOKO TINGKIR | KOP SEDIA RAHAYU | KOP PERDAGANGAN | JML POT EKSTERN | JML POT INTERN | TOTAL POTONGAN | GAJI BERSIH
+                </div>
+                <textarea class="paste-area" id="gaji-paste-bruto" style="min-height:140px;" placeholder="Paste Sheet Gaji Bruto..."></textarea>
+              </div>
+              <div>
+                <label class="form-label">Sheet 2: POTONGAN INTERNAL</label>
+                <div class="col-ref" style="font-size:10px; padding:8px;">
+                   NO | NAMA | NO REK | GAJI BRUTO | KORPRI | DH. Wanita | Sosial BPPKAD | Beras | ZAKAT | Besukan TU | PMI | DPLK | TOTAL
+                </div>
+                <textarea class="paste-area" id="gaji-paste-internal" style="min-height:140px;" placeholder="Paste Sheet Potongan Internal..."></textarea>
+              </div>
             </div>
-            <label class="form-label">Paste Data Excel</label>
-            <textarea class="paste-area" id="gaji-paste" placeholder="Paste data Excel di sini (Ctrl+V)..." oninput="previewImport('gaji')"></textarea>
-            <div id="gaji-preview"></div>
-            <br>
-            <button class="btn-import" id="btn-import-gaji" onclick="importGaji()">📤 Import Gaji ASN</button>
+            
+            <button class="btn-import" id="btn-import-gaji" onclick="importGaji()">📤 Proses &amp; Import Gaji ASN</button>
             <div class="status-box" id="gaji-status"></div>
+            <div id="gaji-preview" style="margin-top:16px;"></div>
           </div>
         </div>
 
         <!-- ══ PANEL: IMPORT TPP ASN ══ -->
         <div class="panel" id="panel-tpp-asn">
           <div class="card">
-            <div class="card-title">Import Data TPP ASN</div>
-            <div class="card-sub">Copy-paste dari Master Excel TPP ASN per bulan</div>
-            <div class="info-box">
-              <strong>Pastikan Excel TPP ASN Anda memiliki kolom NIP dan PIN.</strong> Kolom ini diperlukan untuk menghubungkan data TPP ke akun pegawai.
-            </div>
+            <div class="card-title">Import Data TPP ASN Bulanan</div>
+            <div class="card-sub">Transfer data TPP bulanan</div>
+            <div class="info-box">Sistem otomatis mencocokkan NAMA dengan database Master Pegawai untuk mengambil NIP.</div>
             <div class="import-row">
               <div class="form-group" style="margin:0">
                 <label class="form-label">Bulan (contoh: April 2026)</label>
@@ -281,12 +331,12 @@
               </div>
             </div>
             <div class="col-ref">
-              Susunan Kolom Excel:<br>
-              No | Nama | NIP | PIN | No Rek | TPP Kotor | Pot TPP | Penerimaan | Pot Koperasi | Matra | Zakat | Infaq | BPJS | Penerimaan Bersih
+              <strong>Susunan Kolom Excel (tanpa NIP/PIN):</strong><br>
+              No | Nama | No Rek | TPP Kotor | Pot TPP | Penerimaan | Pot Koperasi | Matra | Zakat | Infaq | BPJS | Penerimaan Bersih<br>
+              <em style="color:#555">Catatan: Jika template Excel Anda yang lama masih ada kolom NIP dan PIN, sistem juga akan mendeteksinya.</em>
             </div>
-            <label class="form-label">Paste Data Excel</label>
-            <textarea class="paste-area" id="asn-paste" placeholder="Paste data Excel di sini (Ctrl+V)..." oninput="previewTPP('asn')"></textarea>
-            <div id="asn-preview"></div>
+            <label class="form-label">Paste Data Excel TPP ASN</label>
+            <textarea class="paste-area" id="asn-paste" placeholder="Paste data Excel di sini (Ctrl+V)..."></textarea>
             <br>
             <button class="btn-import" id="btn-import-asn" onclick="importTPP('ASN')">📤 Import TPP ASN</button>
             <div class="status-box" id="asn-status"></div>
@@ -296,11 +346,9 @@
         <!-- ══ PANEL: IMPORT TPP P3K ══ -->
         <div class="panel" id="panel-tpp-p3k">
           <div class="card">
-            <div class="card-title">Import Data TPP P3K</div>
-            <div class="card-sub">Copy-paste dari Master Excel TPP P3K per bulan</div>
-            <div class="info-box">
-              <strong>Pegawai P3K akan otomatis dibuat</strong> jika NIP belum terdaftar, dengan tipe = P3K.
-            </div>
+            <div class="card-title">Import Data TPP P3K Bulanan</div>
+            <div class="card-sub">Transfer data TPP Bulanan khusus honorer/P3K</div>
+            <div class="info-box">Sistem otomatis mencocokkan NAMA dengan database Master Pegawai untuk mengambil NIP.</div>
             <div class="import-row">
               <div class="form-group" style="margin:0">
                 <label class="form-label">Bulan (contoh: April 2026)</label>
@@ -308,12 +356,11 @@
               </div>
             </div>
             <div class="col-ref">
-              Susunan Kolom Excel:<br>
-              No | Nama | NIP | PIN | No Rek | TPP Kotor | Pot TPP | Penerimaan | Pot Koperasi | Matra | Zakat | Infaq | BPJS | Penerimaan Bersih
+              <strong>Susunan Kolom Excel (tanpa NIP/PIN):</strong><br>
+              No | Nama | No Rek | TPP Kotor | Pot TPP | Penerimaan | Pot Koperasi | Matra | Zakat | Infaq | BPJS | Penerimaan Bersih
             </div>
-            <label class="form-label">Paste Data Excel</label>
-            <textarea class="paste-area" id="p3k-paste" placeholder="Paste data Excel di sini (Ctrl+V)..." oninput="previewTPP('p3k')"></textarea>
-            <div id="p3k-preview"></div>
+            <label class="form-label">Paste Data Excel TPP P3K</label>
+            <textarea class="paste-area" id="p3k-paste" placeholder="Paste data Excel di sini (Ctrl+V)..."></textarea>
             <br>
             <button class="btn-import" id="btn-import-p3k" onclick="importTPP('P3K')">📤 Import TPP P3K</button>
             <div class="status-box" id="p3k-status"></div>
@@ -323,8 +370,8 @@
         <!-- ══ PANEL: USERS ══ -->
         <div class="panel" id="panel-users">
           <div class="card">
-            <div class="card-title">Manajemen User / Pegawai</div>
-            <div class="card-sub">Kelola akun pegawai: lihat PIN, reset PIN, atau hapus akun</div>
+            <div class="card-title">Kelola Akun Pegawai</div>
+            <div class="card-sub">Lihat detail, reset PIN, atau hapus akun pegawai yang pensiun/pindah.</div>
             <div class="user-toolbar">
               <input type="text" class="search-input" id="user-search" placeholder="🔍 Cari NIP atau Nama..." oninput="filterUsers()">
               <select class="filter-select" id="user-filter" onchange="filterUsers()">
@@ -366,7 +413,12 @@
     const { createClient } = supabase;
     const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let allUsers = [];
+    let allUsers = []; 
+    // Load users list immediately upon app show to memorize NIP matching matters
+    async function initMasterData() {
+      const { data } = await db.from('pegawai').select('nip,nama,no_rek,tipe');
+      if(data) allUsers = data;
+    }
 
     // ── Helpers ───────────────────────────────
     const setLoad = v => document.getElementById('overlay').classList.toggle('show', v);
@@ -384,6 +436,18 @@
       let s = val.toString().trim().replace(/,(\d{1,2})$/, '').replace(/\.(\d{1,2})$/, '').replace(/\D/g, '');
       return parseInt(s) || 0;
     }
+    function toggleSidebar(force) {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('sidebar-overlay');
+      const show = force !== undefined ? force : !sb.classList.contains('show');
+      if (show) {
+        sb.classList.add('show');
+        ov.classList.add('show');
+      } else {
+        sb.classList.remove('show');
+        ov.classList.remove('show');
+      }
+    }
 
     // ── Admin Login ───────────────────────────
     document.getElementById('admin-pass').addEventListener('keydown', e => { if(e.key==='Enter') doAdminLogin(); });
@@ -397,11 +461,7 @@
       btn.disabled = true; btn.textContent = 'Memproses...';
       setLoad(true);
 
-      const { data, error } = await db
-        .from('admin_config')
-        .select('value')
-        .eq('key', 'admin_password')
-        .single();
+      const { data, error } = await db.from('admin_config').select('value').eq('key', 'admin_password').single();
 
       setLoad(false);
       btn.disabled = false; btn.textContent = '🔐 Masuk sebagai Admin';
@@ -413,6 +473,7 @@
       }
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app').classList.add('show');
+      initMasterData(); // Prefetch pegawais
     }
 
     function doSignOut() {
@@ -422,156 +483,235 @@
     }
 
     // ── Navigation ────────────────────────────
-    const panels = ['gaji','tpp-asn','tpp-p3k','users'];
-    const titles = { 'gaji':'Import Gaji ASN', 'tpp-asn':'Import TPP ASN', 'tpp-p3k':'Import TPP P3K', 'users':'Manajemen User / Pegawai' };
+    const panels = ['master','gaji','tpp-asn','tpp-p3k','users'];
+    const titles = { 'master':'Import Master Pegawai', 'gaji':'Import Gaji ASN', 'tpp-asn':'Import TPP ASN', 'tpp-p3k':'Import TPP P3K', 'users':'Kelola Akun Pegawai' };
     function showPanel(id) {
       panels.forEach(p => {
         document.getElementById('panel-'+p).classList.toggle('active', p===id);
         document.getElementById('nav-'+p).classList.toggle('active', p===id);
       });
       document.getElementById('topbar-title').textContent = titles[id];
+      if (window.innerWidth <= 768) toggleSidebar(false);
       if (id === 'users') loadUsers();
     }
 
-    // ── Parse Excel Paste ─────────────────────
-    function parseGajiRows(text) {
+    function getPegawaiMatch(nama, norek) {
+       let n = nama.trim().toLowerCase();
+       let m = allUsers.find(u => u.nama.toLowerCase().trim() === n);
+       if(!m && norek) {
+         m = allUsers.find(u => u.no_rek && u.no_rek.toString().trim() === norek.toString().trim());
+       }
+       return m;
+    }
+
+    // ── Master Pegawai ────────────────────────
+    function parseMasterRows(text) {
       const rows = [];
       text.trim().split('\n').forEach((line, i) => {
-        const rawLine = line.trim();
-        if (!rawLine) return;
-        const c = rawLine.split('\t');
-        if (c.length < 5) return;
-        rows.push({
+        const c = line.trim().split('\t');
+        if (c.length < 4) return;
+        let p = {
           no: parseInt(cleanNum(c[0])) || (i+1),
-          nama: (c[1]||'').trim(), nip: (c[2]||'').trim(), pin: (c[3]||'').trim(),
-          no_rek: (c[4]||'').trim(), gaji: cleanNum(c[5]),
-          pot_bank_jateng: cleanNum(c[6]), dplk: cleanNum(c[7]),
-          pot_bppkad: cleanNum(c[8]), korpri: cleanNum(c[9]),
-          dh_wanita: cleanNum(c[10]), sosial_bppkad: cleanNum(c[11]),
-          beras: cleanNum(c[12]), zakat: cleanNum(c[13]),
-          besukan_tu: cleanNum(c[14]), pmi: cleanNum(c[15]),
-          kop_sedya_rhy: cleanNum(c[16]), kop_perdagangan: cleanNum(c[17]),
-          bkk_gesi: cleanNum(c[18]), joko_tingkir: cleanNum(c[19]),
-          bri: cleanNum(c[20]), bkk_karangmalang: cleanNum(c[21]),
-          bjb: cleanNum(c[22]), penerimaan_bersih: cleanNum(c[23])
-        });
+          nama: (c[1]||'').trim(),
+          nip: (c[2]||'').trim().replace(/['`]/g,''),
+          pin: (c[3]||'').trim(),
+          no_rek: (c[4]||'').trim().replace(/['`]/g,'')
+        };
+        let tipe = (c[5]||'').trim().toUpperCase();
+        if(tipe.includes('P3K') || tipe.includes('PPPK')) p.tipe = 'P3K';
+        else p.tipe = 'ASN';
+        rows.push(p);
       });
       return rows;
     }
+    function previewMaster() {
+       const text = document.getElementById('master-paste').value;
+       const rows = parseMasterRows(text).slice(0, 5);
+       const el = document.getElementById('master-preview');
+       if (!rows.length) { el.innerHTML=''; return; }
+       el.innerHTML = `<div class="preview-wrap"><table><thead><tr><th>#</th><th>Nama</th><th>NIP</th><th>PIN</th><th>No Rek</th><th>Tipe</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.no}</td><td>${r.nama}</td><td>${r.nip}</td><td>${r.pin}</td><td>${r.no_rek}</td><td>${r.tipe}</td></tr>`).join('')}</tbody></table></div><div class="preview-count">Preview ${rows.length} baris pertama. Total: ${parseMasterRows(text).length} baris.</div>`;
+    }
+    async function importMaster() {
+      const text = document.getElementById('master-paste').value;
+      const rows = parseMasterRows(text).filter(r => r.nip && r.nama);
+      if (!rows.length) { setStatus('master-status','⚠️ Data kosong atau format salah.','error'); return; }
 
-    function parseTPPRows(text) {
-      const rows = [];
-      text.trim().split('\n').forEach((line, i) => {
-        const rawLine = line.trim();
-        if (!rawLine) return;
-        const c = rawLine.split('\t');
-        if (c.length < 5) return;
-        rows.push({
-          no: parseInt(cleanNum(c[0])) || (i+1),
-          nama: (c[1]||'').trim(), nip: (c[2]||'').trim(), pin: (c[3]||'').trim(),
-          no_rek: (c[4]||'').trim(), tpp_kotor: cleanNum(c[5]),
-          pot_tpp: cleanNum(c[6]), penerimaan: cleanNum(c[7]),
-          pot_koperasi: cleanNum(c[8]), matra: cleanNum(c[9]),
-          zakat: cleanNum(c[10]), infaq: cleanNum(c[11]),
-          bpjs: cleanNum(c[12]), penerimaan_bersih: cleanNum(c[13])
-        });
-      });
-      return rows;
+      const btn = document.getElementById('btn-import-master');
+      btn.disabled = true; setLoad(true);
+
+      const pegawaiArr = rows.map(r => ({ nip: r.nip, nama: r.nama, no_rek: r.no_rek, pin: r.pin, tipe: r.tipe }));
+      const { error } = await db.rpc('upsert_pegawai_batch', { p_records: pegawaiArr });
+
+      setLoad(false); btn.disabled = false;
+      if(error) {
+        setStatus('master-status','❌ Error: '+error.message, 'error');
+        toast('Gagal import Master', 'e');
+      } else {
+        setStatus('master-status',`✅ Berhasil mengupdate ${rows.length} master pegawai.`, 'success');
+        document.getElementById('master-paste').value=''; 
+        document.getElementById('master-preview').innerHTML='';
+        toast('✅ Import sukses', 's');
+        await initMasterData(); // reload memory
+      }
     }
 
-    // ── Preview ───────────────────────────────
-    function previewImport(type) {
-      const text = document.getElementById('gaji-paste').value;
-      const rows = parseGajiRows(text).slice(0, 5);
-      const el = document.getElementById('gaji-preview');
-      if (!rows.length) { el.innerHTML=''; return; }
-      el.innerHTML = `<div class="preview-wrap"><table><thead><tr><th>#</th><th>Nama</th><th>NIP</th><th>PIN</th><th>Gaji</th><th>Bersih</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.no}</td><td>${r.nama}</td><td>${r.nip}</td><td>${r.pin}</td><td>Rp ${r.gaji.toLocaleString('id-ID')}</td><td>Rp ${r.penerimaan_bersih.toLocaleString('id-ID')}</td></tr>`).join('')}</tbody></table></div><div class="preview-count">Preview 5 baris pertama. Total dideteksi: ${parseGajiRows(text).length} baris.</div>`;
-    }
-
-    function previewTPP(type) {
-      const text = document.getElementById(type+'-paste').value;
-      const rows = parseTPPRows(text).slice(0, 5);
-      const el = document.getElementById(type+'-preview');
-      if (!rows.length) { el.innerHTML=''; return; }
-      el.innerHTML = `<div class="preview-wrap"><table><thead><tr><th>#</th><th>Nama</th><th>NIP</th><th>PIN</th><th>TPP Kotor</th><th>Bersih</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.no}</td><td>${r.nama}</td><td>${r.nip}</td><td>${r.pin}</td><td>Rp ${r.tpp_kotor.toLocaleString('id-ID')}</td><td>Rp ${r.penerimaan_bersih.toLocaleString('id-ID')}</td></tr>`).join('')}</tbody></table></div><div class="preview-count">Preview 5 baris pertama. Total: ${parseTPPRows(text).length} baris.</div>`;
-    }
-
-    // ── Import Gaji ASN (BATCH — cepat) ─────────
+    // ── Import Gaji ASN ────────────────────────
     async function importGaji() {
       const bulan = document.getElementById('gaji-bulan').value.trim();
-      const text  = document.getElementById('gaji-paste').value;
-      if (!bulan) { setStatus('gaji-status','⚠️ Isi nama bulan terlebih dahulu!','error'); return; }
-      const rows = parseGajiRows(text).filter(r => r.nip && r.nama);
-      if (!rows.length) { setStatus('gaji-status','⚠️ Data kosong atau format salah.','error'); return; }
+      if(!bulan) { setStatus('gaji-status','⚠️ Isi bulan terlebih dahulu','error'); return; }
+      
+      const txtBruto = document.getElementById('gaji-paste-bruto').value;
+      const txtInter = document.getElementById('gaji-paste-internal').value;
+      
+      let bruto = txtBruto.trim().split('\n').filter(r => r.trim()!=='');
+      let inter = txtInter.trim().split('\n').filter(r => r.trim()!=='');
+      
+      let dbObj = {};
+      let parseErr = [];
+      // 1. Process Bruto
+      bruto.forEach(line => {
+        let c = line.split('\t');
+        if(c.length < 5 || c[0].toUpperCase()==='NO') return;
+        let n = c[1].trim();
+        dbObj[n.toLowerCase()] = {
+          nama: n, no_rek: c[2].trim(),
+          gaji: cleanNum(c[3]), pot_bank_jateng: cleanNum(c[4]),
+          dplk: cleanNum(c[5]), bri: cleanNum(c[6]), 
+          bkk_karangmalang: cleanNum(c[7]), joko_tingkir: cleanNum(c[8]),
+          kop_sedya_rhy: cleanNum(c[9]), kop_perdagangan: cleanNum(c[10]),
+          penerimaan_bersih: cleanNum(c[14] || c[c.length-1])
+        };
+      });
+      // 2. Process Internal
+      inter.forEach(line => {
+        let c = line.split('\t');
+        if(c.length < 5 || c[0].toUpperCase()==='NO') return;
+        let n = c[1].trim().toLowerCase();
+        if(!dbObj[n]) dbObj[n] = { nama: c[1].trim(), no_rek: c[2].trim() };
+        dbObj[n].korpri = cleanNum(c[4]);
+        dbObj[n].dh_wanita = cleanNum(c[5]);
+        dbObj[n].sosial_bppkad = cleanNum(c[6]);
+        dbObj[n].beras = cleanNum(c[7]);
+        dbObj[n].zakat = cleanNum(c[8]);
+        dbObj[n].besukan_tu = cleanNum(c[9]);
+        dbObj[n].pmi = cleanNum(c[10]);
+        let dInter = cleanNum(c[11]);
+        if(dInter>0) dbObj[n].dplk = dInter; 
+      });
+
+      let results = Object.values(dbObj);
+      if(!results.length) { setStatus('gaji-status','⚠️ Tidak ada data ditemukan pada text-area.','error'); return; }
+
+      let toInsert = [];
+      let unknown = [];
+      
+      results.forEach(r => {
+        let m = getPegawaiMatch(r.nama, r.no_rek);
+        if(m) {
+          toInsert.push({
+            nip: m.nip, nama: r.nama, no_rek: r.no_rek, bulan,
+            gaji: r.gaji||0, pot_bank_jateng: r.pot_bank_jateng||0, dplk: r.dplk||0,
+            pot_bppkad: 0, korpri: r.korpri||0, dh_wanita: r.dh_wanita||0,
+            sosial_bppkad: r.sosial_bppkad||0, beras: r.beras||0, zakat: r.zakat||0,
+            besukan_tu: r.besukan_tu||0, pmi: r.pmi||0, kop_sedya_rhy: r.kop_sedya_rhy||0,
+            kop_perdagangan: r.kop_perdagangan||0, bkk_gesi: 0, joko_tingkir: r.joko_tingkir||0,
+            bri: r.bri||0, bkk_karangmalang: r.bkk_karangmalang||0, bjb: 0,
+            penerimaan_bersih: r.penerimaan_bersih||0
+          });
+        } else {
+          unknown.push(r.nama);
+        }
+      });
+
+      if(toInsert.length === 0) {
+        setStatus('gaji-status', `❌ Gagal: Semua nama tidak ditemukan di database pegawai.\n${unknown.slice(0,5).join(', ')} ...`, 'error');
+        return;
+      }
 
       const btn = document.getElementById('btn-import-gaji');
-      btn.disabled = true;
-      setStatus('gaji-status', `⏳ Memproses ${rows.length} pegawai...`, 'success');
-      setLoad(true);
+      btn.disabled = true; setLoad(true);
 
-      // 1. Batch upsert pegawai (1 RPC call)
-      const pegawaiArr = rows.map(r => ({ nip: r.nip, nama: r.nama, no_rek: r.no_rek, pin: r.pin, tipe: 'ASN' }));
-      const { error: errPeg } = await db.rpc('upsert_pegawai_batch', { p_records: pegawaiArr });
+      const { error } = await db.from('slip_gaji').upsert(toInsert, { onConflict: 'nip,bulan' });
 
-      // 2. Batch upsert slip_gaji (1 upsert call)
-      const slipArr = rows.map(r => ({
-        nip: r.nip, nama: r.nama, no_rek: r.no_rek, bulan,
-        gaji: r.gaji, pot_bank_jateng: r.pot_bank_jateng, dplk: r.dplk,
-        pot_bppkad: r.pot_bppkad, korpri: r.korpri, dh_wanita: r.dh_wanita,
-        sosial_bppkad: r.sosial_bppkad, beras: r.beras, zakat: r.zakat,
-        besukan_tu: r.besukan_tu, pmi: r.pmi, kop_sedya_rhy: r.kop_sedya_rhy,
-        kop_perdagangan: r.kop_perdagangan, bkk_gesi: r.bkk_gesi,
-        joko_tingkir: r.joko_tingkir, bri: r.bri,
-        bkk_karangmalang: r.bkk_karangmalang, bjb: r.bjb,
-        penerimaan_bersih: r.penerimaan_bersih
-      }));
-      const { error: errSlip } = await db.from('slip_gaji').upsert(slipArr, { onConflict: 'nip,bulan' });
-
-      setLoad(false);
-      btn.disabled = false; btn.textContent = '📤 Import Gaji ASN';
-      const ok = !errPeg && !errSlip;
-      setStatus('gaji-status',
-        ok ? `✅ Berhasil import ${rows.length} data Gaji ASN — Bulan: ${bulan}` : `❌ Error: ${errPeg?.message || errSlip?.message}`,
-        ok ? 'success' : 'error');
-      if (ok) { document.getElementById('gaji-paste').value=''; document.getElementById('gaji-preview').innerHTML=''; }
-      toast(ok ? `✅ Import Gaji ${rows.length} pegawai selesai` : '❌ Import gagal', ok?'s':'e');
+      setLoad(false); btn.disabled = false;
+      if(error) {
+        setStatus('gaji-status', '❌ Error DB: ' + error.message, 'error');
+      } else {
+        let msg = `✅ Berhasil import ${toInsert.length} slip gaji ASN.`;
+        if(unknown.length>0) msg += `\n⚠️ PERINGATAN: ${unknown.length} Nama DITOLAK karena NIP tidak ditemukan (Belum di-Import Master):\n${unknown.slice(0,10).join(', ')}`;
+        setStatus('gaji-status', msg, unknown.length>0 ? 'error' : 'success');
+        document.getElementById('gaji-paste-bruto').value = '';
+        document.getElementById('gaji-paste-internal').value = '';
+        toast('Selesai diproses', 's');
+      }
     }
 
-    // ── Import TPP ASN/P3K (BATCH — cepat) ──────
+    // ── Import TPP ──────────────────────────────
     async function importTPP(tipe) {
       const key = tipe === 'ASN' ? 'asn' : 'p3k';
       const bulan = document.getElementById(key+'-bulan').value.trim();
       const text  = document.getElementById(key+'-paste').value;
       if (!bulan) { setStatus(key+'-status','⚠️ Isi nama bulan terlebih dahulu!','error'); return; }
-      const rows = parseTPPRows(text).filter(r => r.nip && r.nama);
-      if (!rows.length) { setStatus(key+'-status','⚠️ Data kosong atau format salah.','error'); return; }
+      
+      let lines = text.trim().split('\n').filter(l => l.trim() !== '');
+      if(!lines.length) { setStatus(key+'-status','⚠️ Area teks kosong.','error'); return; }
+
+      let toInsert = [];
+      let unknown = [];
+
+      lines.forEach((line) => {
+        let c = line.trim().split('\t');
+        if(c.length < 5 || c[0].toUpperCase().includes('NO')) return;
+        
+        let shift = 0;
+        // Old template support: NO | NAMA | NIP | PIN | NO REK ...
+        // If col 2 looks like a NIP (long numeric)
+        if (c.length >= 14 && /^['`]?\d{10,25}$/.test(c[2].trim())) {
+           shift = 2; // skip nip and pin columns
+        }
+        
+        let nama = c[1].trim();
+        let norek = c[2+shift] ? c[2+shift].trim() : '';
+        let m = getPegawaiMatch(nama, norek);
+        
+        let nipUser = null;
+        if(m) nipUser = m.nip;
+        else if(shift > 0) nipUser = c[2].trim().replace(/['`]/g,''); // fallback from table
+
+        if(nipUser) {
+           toInsert.push({
+              nip: nipUser, nama: nama, no_rek: norek, bulan: bulan, tipe: tipe,
+              tpp_kotor: cleanNum(c[3+shift]), pot_tpp: cleanNum(c[4+shift]),
+              penerimaan: cleanNum(c[5+shift]), pot_koperasi: cleanNum(c[6+shift]),
+              matra: cleanNum(c[7+shift]), zakat: cleanNum(c[8+shift]),
+              infaq: cleanNum(c[9+shift]), bpjs: cleanNum(c[10+shift]),
+              penerimaan_bersih: cleanNum(c[11+shift])
+           });
+        } else {
+           unknown.push(nama);
+        }
+      });
+
+      if(toInsert.length === 0) {
+        setStatus(key+'-status', `❌ Gagal: Tidak ada yang berhasil diparsing. Cek Master Pegawai.`, 'error');
+        return;
+      }
 
       const btn = document.getElementById('btn-import-'+key);
-      btn.disabled = true;
-      setStatus(key+'-status', `⏳ Memproses ${rows.length} pegawai...`, 'success');
-      setLoad(true);
+      btn.disabled = true; setLoad(true);
 
-      // 1. Batch upsert pegawai (1 RPC call)
-      const pegawaiArr = rows.map(r => ({ nip: r.nip, nama: r.nama, no_rek: r.no_rek, pin: r.pin, tipe }));
-      const { error: errPeg } = await db.rpc('upsert_pegawai_batch', { p_records: pegawaiArr });
+      const { error } = await db.from('slip_tpp').upsert(toInsert, { onConflict: 'nip,bulan,tipe' });
 
-      // 2. Batch upsert slip_tpp (1 upsert call)
-      const slipArr = rows.map(r => ({
-        nip: r.nip, nama: r.nama, no_rek: r.no_rek, bulan, tipe,
-        tpp_kotor: r.tpp_kotor, pot_tpp: r.pot_tpp, penerimaan: r.penerimaan,
-        pot_koperasi: r.pot_koperasi, matra: r.matra, zakat: r.zakat,
-        infaq: r.infaq, bpjs: r.bpjs, penerimaan_bersih: r.penerimaan_bersih
-      }));
-      const { error: errSlip } = await db.from('slip_tpp').upsert(slipArr, { onConflict: 'nip,bulan,tipe' });
-
-      setLoad(false);
-      btn.disabled = false; btn.textContent = `📤 Import TPP ${tipe}`;
-      const ok = !errPeg && !errSlip;
-      setStatus(key+'-status',
-        ok ? `✅ Berhasil import ${rows.length} data TPP ${tipe} — Bulan: ${bulan}` : `❌ Error: ${errPeg?.message || errSlip?.message}`,
-        ok ? 'success' : 'error');
-      if (ok) { document.getElementById(key+'-paste').value=''; document.getElementById(key+'-preview').innerHTML=''; }
-      toast(ok ? `✅ Import TPP ${tipe} ${rows.length} pegawai selesai` : '❌ Import gagal', ok?'s':'e');
+      setLoad(false); btn.disabled = false;
+      if(error) {
+        setStatus(key+'-status', '❌ Error DB: ' + error.message, 'error');
+      } else {
+        let msg = `✅ Berhasil import ${toInsert.length} TPP ${tipe}.`;
+        if(unknown.length>0) msg += `\n⚠️ DITOLAK karena tidak diregister di Master:\n${unknown.slice(0,5).join(', ')}`;
+        setStatus(key+'-status', msg, unknown.length>0 ? 'error' : 'success');
+        document.getElementById(key+'-paste').value = '';
+        toast(`Import TPP ${tipe} Selesai`, 's');
+      }
     }
 
     // ── Load Users ────────────────────────────
@@ -583,7 +723,7 @@
         .order('nama', { ascending: true });
       setLoad(false);
       if (error) { toast('Gagal memuat data user','e'); return; }
-      allUsers = data || [];
+      allUsers = data || []; // Update local memory entirely including pins
       renderUsers(allUsers);
     }
 
