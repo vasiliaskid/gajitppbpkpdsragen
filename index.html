@@ -407,7 +407,17 @@
     .slip-card-header {
       background: var(--navy);
       padding: 16px 20px 14px;
-      text-align: center
+      text-align: center;
+      position: relative;
+    }
+
+    .slip-logo {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 48px;
+      height: auto;
     }
 
     .slip-instansi {
@@ -813,6 +823,7 @@
       <div id="gaji-content" style="display:none">
         <div class="slip-card">
           <div class="slip-card-header">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Seal_of_Sragen_Regency.svg" class="slip-logo" alt="Logo Sragen">
             <div class="slip-instansi">Pemerintah Kabupaten Sragen</div>
             <div class="slip-instansi">Badan Pengelolaan Keuangan dan Pendapatan Daerah</div>
             <div class="slip-title">SLIP GAJI</div>
@@ -865,6 +876,7 @@
       <div id="tpp-content" style="display:none">
         <div class="slip-card">
           <div class="slip-card-header">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Seal_of_Sragen_Regency.svg" class="slip-logo" alt="Logo Sragen">
             <div class="slip-instansi">Pemerintah Kabupaten Sragen</div>
             <div class="slip-instansi">Badan Pengelolaan Keuangan dan Pendapatan Daerah</div>
             <div class="slip-title">SLIP TPP</div>
@@ -1216,6 +1228,10 @@
 
       doc.setFillColor(27, 58, 92);
       doc.rect(0, 0, 148, 40, 'F');
+      
+      // Tambahkan Logo di sebelah kiri header
+      doc.addImage(LOGO_BASE64, 'PNG', 12, 7, 20, 26);
+
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(9); doc.text('PEMERINTAH KABUPATEN SRAGEN', 74, 10, { align: 'center' });
       doc.text('BADAN PENGELOLAAN KEUANGAN DAN PENDAPATAN DAERAH', 74, 15, { align: 'center' });
@@ -1304,6 +1320,10 @@
 
       doc.setFillColor(27, 58, 92);
       doc.rect(0, 0, 148, 40, 'F');
+      
+      // Tambahkan Logo di sebelah kiri header
+      doc.addImage(LOGO_BASE64, 'PNG', 12, 7, 20, 26);
+
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(9); doc.text('PEMERINTAH KABUPATEN SRAGEN', 74, 10, { align: 'center' });
       doc.text('BADAN PENGELOLAAN KEUANGAN DAN PENDAPATAN DAERAH', 74, 15, { align: 'center' });
