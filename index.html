@@ -1230,15 +1230,15 @@ function downloadPDF() {
       doc.setFillColor(27, 58, 92);
       doc.rect(0, 0, 148, 40, 'F');
       
-      // Tambahkan Logo di sebelah kiri header
-      doc.addImage(LOGO_BASE64, 'PNG', 12, 7, 20, 26);
+      // Tambahkan Logo di sebelah kiri header (diperkecil dan digeser)
+      doc.addImage(LOGO_BASE64, 'PNG', 10, 6, 17, 24);
 
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(9); doc.text('PEMERINTAH KABUPATEN SRAGEN', 74, 10, { align: 'center' });
-      doc.text('BADAN PENGELOLAAN KEUANGAN DAN PENDAPATAN DAERAH', 74, 15, { align: 'center' });
-      doc.setFontSize(14); doc.setFont(undefined, 'bold'); doc.text('SLIP GAJI', 74, 24, { align: 'center' });
+      doc.setFontSize(9); doc.text('PEMERINTAH KABUPATEN SRAGEN', 80, 10, { align: 'center' });
+      doc.setFontSize(8.5); doc.text('BADAN PENGELOLAAN KEUANGAN DAN PENDAPATAN DAERAH', 80, 15, { align: 'center' });
+      doc.setFontSize(14); doc.setFont(undefined, 'bold'); doc.text('SLIP GAJI', 80, 24, { align: 'center' });
       doc.setFontSize(10); doc.setFont(undefined, 'normal');
-      doc.setTextColor(201, 168, 76); doc.text(bulan, 74, 31, { align: 'center' });
+      doc.setTextColor(201, 168, 76); doc.text(bulan, 80, 31, { align: 'center' });
 
       doc.setTextColor(44, 62, 80);
       let y = 48;
@@ -1322,15 +1322,15 @@ function downloadPDF() {
       doc.setFillColor(27, 58, 92);
       doc.rect(0, 0, 148, 40, 'F');
       
-      // Tambahkan Logo di sebelah kiri header
-      doc.addImage(LOGO_BASE64, 'PNG', 12, 7, 20, 26);
+      // Tambahkan Logo di sebelah kiri header (diperkecil dan digeser)
+      doc.addImage(LOGO_BASE64, 'PNG', 10, 6, 17, 24);
 
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(9); doc.text('PEMERINTAH KABUPATEN SRAGEN', 74, 10, { align: 'center' });
-      doc.text('BADAN PENGELOLAAN KEUANGAN DAN PENDAPATAN DAERAH', 74, 15, { align: 'center' });
-      doc.setFontSize(14); doc.setFont(undefined, 'bold'); doc.text('SLIP TPP', 74, 24, { align: 'center' });
+      doc.setFontSize(9); doc.text('PEMERINTAH KABUPATEN SRAGEN', 80, 10, { align: 'center' });
+      doc.setFontSize(8.5); doc.text('BADAN PENGELOLAAN KEUANGAN DAN PENDAPATAN DAERAH', 80, 15, { align: 'center' });
+      doc.setFontSize(14); doc.setFont(undefined, 'bold'); doc.text('SLIP TPP', 80, 24, { align: 'center' });
       doc.setFontSize(10); doc.setFont(undefined, 'normal');
-      doc.setTextColor(201, 168, 76); doc.text(bulan, 74, 31, { align: 'center' });
+      doc.setTextColor(201, 168, 76); doc.text(bulan, 80, 31, { align: 'center' });
 
       doc.setTextColor(44, 62, 80);
       let y = 48;
