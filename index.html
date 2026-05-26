@@ -1087,7 +1087,7 @@
         { label: 'Zakat', val: slip.zakat },
         { label: 'Besukan TU', val: slip.besukan_tu },
         { label: 'PMI', val: slip.pmi },
-        { label: 'Kop. Sedya Raharja', val: slip.kop_sedya_rhy },
+        { label: 'Kop. Sedya Rahayu', val: slip.kop_sedya_rhy },
         { label: 'Kop. Perdagangan', val: slip.kop_perdagangan },
         { label: 'BKK Gesi', val: slip.bkk_gesi },
         { label: 'Joko Tingkir', val: slip.joko_tingkir },
@@ -1257,6 +1257,38 @@
       doc.text('PENERIMAAN BERSIH', 12, y + 5);
       doc.setFontSize(12); doc.text(bersih, 136, y + 5, { align: 'right' });
 
+      // Tanda tangan pejabat
+      y += 20;
+      const leftX = 38; // center of left column
+      const rightX = 112; // center of right column
+
+      doc.setTextColor(44, 62, 80);
+
+      // Kiri: Kepala BPKPD
+      doc.setFontSize(8); doc.setFont(undefined, 'normal');
+      doc.text('Mengetahui', leftX, y, { align: 'center' });
+      doc.text('Kepala BPKPD Kab. Sragen', leftX, y + 4, { align: 'center' });
+
+      // Kanan: Bendahara
+      doc.text('Sragen,', rightX, y, { align: 'center' });
+      doc.text('Bendahara Pengeluaran', rightX, y + 4, { align: 'center' });
+
+      // Spasi tanda tangan
+      y += 24;
+
+      // Kiri: Nama & detail Kepala
+      doc.setFontSize(8); doc.setFont(undefined, 'bold');
+      doc.text('Badrus Samsu Darusi, S.STP.,M.Si', leftX, y, { align: 'center' });
+      doc.setFont(undefined, 'normal');
+      doc.text('Pembina Utama Muda', leftX, y + 4, { align: 'center' });
+      doc.text('NIP.  19780923 199803 1 003', leftX, y + 8, { align: 'center' });
+
+      // Kanan: Nama & detail Bendahara
+      doc.setFont(undefined, 'bold');
+      doc.text('Anakardia Nirmala, A. Md', rightX, y, { align: 'center' });
+      doc.setFont(undefined, 'normal');
+      doc.text('NIP.  19811004 200903 2 002', rightX, y + 4, { align: 'center' });
+
       doc.save('slip-gaji-' + (nama.split(',')[0].replace(/\s+/g, '-')) + '-' + bulan.replace(/\s+/g, '-') + '.pdf');
     }
 
@@ -1311,6 +1343,38 @@
       doc.setFontSize(10); doc.setFont(undefined, 'bold'); doc.setTextColor(46, 125, 79);
       doc.text('PENERIMAAN BERSIH', 12, y + 5);
       doc.setFontSize(12); doc.text(bersih, 136, y + 5, { align: 'right' });
+
+      // Tanda tangan pejabat
+      y += 20;
+      const leftX = 38;
+      const rightX = 112;
+
+      doc.setTextColor(44, 62, 80);
+
+      // Kiri: Kepala BPKPD
+      doc.setFontSize(8); doc.setFont(undefined, 'normal');
+      doc.text('Mengetahui', leftX, y, { align: 'center' });
+      doc.text('Kepala BPKPD Kab. Sragen', leftX, y + 4, { align: 'center' });
+
+      // Kanan: Bendahara
+      doc.text('Sragen,', rightX, y, { align: 'center' });
+      doc.text('Bendahara Pengeluaran', rightX, y + 4, { align: 'center' });
+
+      // Spasi tanda tangan
+      y += 24;
+
+      // Kiri: Nama & detail Kepala
+      doc.setFontSize(8); doc.setFont(undefined, 'bold');
+      doc.text('Badrus Samsu Darusi, S.STP.,M.Si', leftX, y, { align: 'center' });
+      doc.setFont(undefined, 'normal');
+      doc.text('Pembina Utama Muda', leftX, y + 4, { align: 'center' });
+      doc.text('NIP.  19780923 199803 1 003', leftX, y + 8, { align: 'center' });
+
+      // Kanan: Nama & detail Bendahara
+      doc.setFont(undefined, 'bold');
+      doc.text('Anakardia Nirmala, A. Md', rightX, y, { align: 'center' });
+      doc.setFont(undefined, 'normal');
+      doc.text('NIP.  19811004 200903 2 002', rightX, y + 4, { align: 'center' });
 
       doc.save('slip-tpp-' + nama.replace(/\s+/g, '-') + '-' + bulan.replace(/\s+/g, '-') + '.pdf');
     }

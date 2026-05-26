@@ -5,3 +5,6 @@ DAFTAR_NIP_PIN_ADMIN.txt
 
 # supabase-config.js SUDAH AMAN untuk di-commit (anon key bersifat publik)
 # Keamanan data dijaga oleh Row Level Security di Supabase
+
+# Lokal saja, tidak perlu di-GitHub
+konteks.md
