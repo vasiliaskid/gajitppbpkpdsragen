@@ -1122,9 +1122,13 @@
                 </select>
               </div>
             </div>
+            <div id="hapus-options-container" style="margin-top: 16px; display: none; background: #fff; border: 1px solid var(--border); padding: 15px; border-radius: 8px;">
+              <div style="font-weight: 600; margin-bottom: 10px; color: var(--navy);">Pilih Data yang Akan Dihapus:</div>
+              <div id="hapus-options-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+            </div>
             <div style="margin-top:16px; display:flex; gap:10px; align-items:center;">
-              <button class="btn-import" style="background:var(--red);padding:10px 20px;font-size:13px" id="btn-hapus-bulan" onclick="hapusBulan()" disabled>🗑️ Hapus Data Bulan Terpilih</button>
-              <button class="btn-import" style="padding:10px 16px;font-size:13px" onclick="loadBulanList()">🔄 Refresh</button>
+              <button class="btn-import" style="background:var(--red);padding:10px 20px;font-size:13px" id="btn-hapus-bulan" onclick="hapusBulan()" disabled>🗑️ Hapus Data Terpilih</button>
+              <button class="btn-import" style="padding:10px 16px;font-size:13px; background:var(--bg); color:var(--text); border:1px solid var(--border)" onclick="loadBulanList()">🔄 Refresh</button>
             </div>
             <div class="status-box" id="hapus-bulan-status"></div>
             <div id="hapus-bulan-detail" style="margin-top:16px;"></div>
@@ -1618,58 +1622,99 @@
 
       sel.onchange = function() {
         const v = sel.value;
-        btn.disabled = !v;
+        const optContainer = document.getElementById('hapus-options-container');
+        const optList = document.getElementById('hapus-options-list');
+        btn.disabled = true;
+
         if (v && bulanMap[v]) {
           const info = bulanMap[v];
-          let html = '<div style="font-size:13px;color:var(--text-sec);">';
-          html += '<strong>Detail data "' + v + '":</strong><br>';
-          if (info.gaji > 0) html += '• Slip Gaji ASN: <strong>' + info.gaji + '</strong> record<br>';
-          if (info.tpp_asn > 0) html += '• Slip TPP ASN: <strong>' + info.tpp_asn + '</strong> record<br>';
-          if (info.tpp_p3k > 0) html += '• Slip TPP P3K: <strong>' + info.tpp_p3k + '</strong> record<br>';
-          html += '</div>';
-          detail.innerHTML = html;
+          let html = '';
+          if (info.gaji > 0) {
+            html += `<label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" class="cb-hapus" value="gaji" onchange="checkHapusBtn()"> Gaji ASN (${info.gaji} record)</label>`;
+          }
+          if (info.tpp_asn > 0) {
+            html += `<label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" class="cb-hapus" value="tpp_asn" onchange="checkHapusBtn()"> TPP ASN (${info.tpp_asn} record)</label>`;
+          }
+          if (info.tpp_p3k > 0) {
+            html += `<label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" class="cb-hapus" value="tpp_p3k" onchange="checkHapusBtn()"> TPP P3K (${info.tpp_p3k} record)</label>`;
+          }
+          optList.innerHTML = html;
+          optContainer.style.display = 'block';
+          detail.innerHTML = '';
         } else {
+          optContainer.style.display = 'none';
+          optList.innerHTML = '';
           detail.innerHTML = '';
         }
       };
     }
+
+    window.checkHapusBtn = function() {
+      const checked = document.querySelectorAll('.cb-hapus:checked').length;
+      document.getElementById('btn-hapus-bulan').disabled = checked === 0;
+    };
 
     async function hapusBulan() {
       const sel = document.getElementById('hapus-bulan-select');
       const bulan = sel.value;
       if (!bulan) return;
 
-      if (!confirm('PERINGATAN!\n\nAnda akan menghapus SEMUA data bulan "' + bulan + '" dari database.\n\nData yang dihapus:\n- Semua slip gaji bulan "' + bulan + '"\n- Semua slip TPP bulan "' + bulan + '"\n\nTindakan ini TIDAK DAPAT dibatalkan.\n\nYakin ingin melanjutkan?')) return;
+      const checkedBoxes = Array.from(document.querySelectorAll('.cb-hapus:checked')).map(cb => cb.value);
+      if (checkedBoxes.length === 0) return;
+
+      const jenisText = checkedBoxes.map(v => {
+        if (v === 'gaji') return 'Gaji ASN';
+        if (v === 'tpp_asn') return 'TPP ASN';
+        if (v === 'tpp_p3k') return 'TPP P3K';
+      }).join(', ');
+
+      if (!confirm(`PERINGATAN!\n\nAnda akan menghapus data berikut untuk bulan "${bulan}":\n- ${jenisText}\n\nTindakan ini TIDAK DAPAT dibatalkan.\n\nYakin ingin melanjutkan?`)) return;
 
       const btn = document.getElementById('btn-hapus-bulan');
       btn.disabled = true;
       setLoad(true);
 
-      let deletedGaji = 0, deletedTpp = 0;
+      let totalDeleted = [];
 
-      // Hapus dari slip_gaji
-      const { data: gajiDel, error: errGaji } = await db.from('slip_gaji').delete().eq('bulan', bulan).select('id');
-      if (errGaji) {
-        setLoad(false); btn.disabled = false;
-        setStatus('hapus-bulan-status', '❌ Error hapus slip gaji: ' + errGaji.message, 'error');
-        return;
+      // Hapus dari slip_gaji jika terpilih
+      if (checkedBoxes.includes('gaji')) {
+        const { data: gajiDel, error: errGaji } = await db.from('slip_gaji').delete().eq('bulan', bulan).select('id');
+        if (errGaji) {
+          setLoad(false); btn.disabled = false;
+          setStatus('hapus-bulan-status', '❌ Error hapus slip gaji: ' + errGaji.message, 'error');
+          return;
+        }
+        totalDeleted.push(`Slip Gaji dihapus: ${gajiDel ? gajiDel.length : 0} record`);
       }
-      deletedGaji = gajiDel ? gajiDel.length : 0;
 
-      // Hapus dari slip_tpp
-      const { data: tppDel, error: errTpp } = await db.from('slip_tpp').delete().eq('bulan', bulan).select('id');
-      if (errTpp) {
-        setLoad(false); btn.disabled = false;
-        setStatus('hapus-bulan-status', '❌ Error hapus slip TPP: ' + errTpp.message, 'error');
-        return;
+      // Hapus dari slip_tpp ASN
+      if (checkedBoxes.includes('tpp_asn')) {
+        const { data: tppAsnDel, error: errTppAsn } = await db.from('slip_tpp').delete().eq('bulan', bulan).eq('tipe', 'ASN').select('id');
+        if (errTppAsn) {
+          setLoad(false); btn.disabled = false;
+          setStatus('hapus-bulan-status', '❌ Error hapus slip TPP ASN: ' + errTppAsn.message, 'error');
+          return;
+        }
+        totalDeleted.push(`Slip TPP ASN dihapus: ${tppAsnDel ? tppAsnDel.length : 0} record`);
       }
-      deletedTpp = tppDel ? tppDel.length : 0;
+
+      // Hapus dari slip_tpp P3K
+      if (checkedBoxes.includes('tpp_p3k')) {
+        const { data: tppP3kDel, error: errTppP3k } = await db.from('slip_tpp').delete().eq('bulan', bulan).eq('tipe', 'P3K').select('id');
+        if (errTppP3k) {
+          setLoad(false); btn.disabled = false;
+          setStatus('hapus-bulan-status', '❌ Error hapus slip TPP P3K: ' + errTppP3k.message, 'error');
+          return;
+        }
+        totalDeleted.push(`Slip TPP P3K dihapus: ${tppP3kDel ? tppP3kDel.length : 0} record`);
+      }
 
       setLoad(false);
-      setStatus('hapus-bulan-status', '✅ Berhasil menghapus data bulan "' + bulan + '"\n• Slip Gaji dihapus: ' + deletedGaji + ' record\n• Slip TPP dihapus: ' + deletedTpp + ' record', 'success');
-      toast('✅ Data bulan "' + bulan + '" berhasil dihapus', 's');
+      setStatus('hapus-bulan-status', `✅ Berhasil menghapus data bulan "${bulan}"\n• ` + totalDeleted.join('\n• '), 'success');
+      toast(`✅ Data ${jenisText} bulan "${bulan}" berhasil dihapus`, 's');
 
       // Refresh list
+      document.getElementById('hapus-options-container').style.display = 'none';
       await loadBulanList();
     }
   </script>
