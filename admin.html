@@ -1066,11 +1066,8 @@
               </div>
             </div>
             <div class="col-ref">
-              <strong>Susunan Kolom Excel (tanpa NIP/PIN):</strong><br>
-              No | Nama | No Rek | TPP Kotor | Pot TPP | Penerimaan | Pot Koperasi | Matra | Zakat | Infaq | BPJS |
-              Penerimaan Bersih<br>
-              <em style="color:#555">Catatan: Jika template Excel Anda yang lama masih ada kolom NIP dan PIN, sistem
-                juga akan mendeteksinya.</em>
+              <strong>Susunan Kolom Excel:</strong><br>
+              NO | NAMA | NIP | TPP KOTOR | POT (BPJS+PPH) | MATRA | KOPERASI | ZAKAT | INFAQ | BPJS | TRANSFER BANK<br>
             </div>
             <label class="form-label">Paste Data Excel TPP ASN</label>
             <textarea class="paste-area" id="asn-paste" placeholder="Paste data Excel di sini (Ctrl+V)..."></textarea>
@@ -1094,9 +1091,8 @@
               </div>
             </div>
             <div class="col-ref">
-              <strong>Susunan Kolom Excel (tanpa NIP/PIN):</strong><br>
-              No | Nama | No Rek | TPP Kotor | Pot TPP | Penerimaan | Pot Koperasi | Matra | Zakat | Infaq | BPJS |
-              Penerimaan Bersih
+              <strong>Susunan Kolom Excel:</strong><br>
+              NO | NAMA | NIP | TPP KOTOR | POT (BPJS+PPH) | MATRA | KOPERASI | ZAKAT | INFAQ | BPJS | TRANSFER BANK<br>
             </div>
             <label class="form-label">Paste Data Excel TPP P3K</label>
             <textarea class="paste-area" id="p3k-paste" placeholder="Paste data Excel di sini (Ctrl+V)..."></textarea>
@@ -1434,31 +1430,25 @@
 
       lines.forEach((line) => {
         let c = line.trim().split('\t');
-        if (c.length < 5 || c[0].toUpperCase().includes('NO')) return;
-
-        let shift = 0;
-        // Old template support: NO | NAMA | NIP | PIN | NO REK ...
-        // If col 2 looks like a NIP (long numeric)
-        if (c.length >= 14 && /^['`]?\d{10,25}$/.test(c[2].trim())) {
-          shift = 2; // skip nip and pin columns
-        }
+        if (c.length < 11 || c[0].toUpperCase().includes('NO')) return;
 
         let nama = c[1].trim();
-        let norek = c[2 + shift] ? c[2 + shift].trim() : '';
-        let m = getPegawaiMatch(nama, norek);
+        let nipUser = c[2] ? c[2].trim().replace(/['`]/g, '') : '';
+        let norek = ''; // Dihapus dari excel TPP
 
-        let nipUser = null;
-        if (m) nipUser = m.nip;
-        else if (shift > 0) nipUser = c[2].trim().replace(/['`]/g, ''); // fallback from table
+        if (!nipUser) {
+           let m = getPegawaiMatch(nama, null);
+           if (m) nipUser = m.nip;
+        }
 
         if (nipUser) {
           toInsert.push({
             nip: nipUser, nama: nama, no_rek: norek, bulan: bulan, tipe: tipe,
-            tpp_kotor: cleanNum(c[3 + shift]), pot_tpp: cleanNum(c[4 + shift]),
-            penerimaan: cleanNum(c[5 + shift]), pot_koperasi: cleanNum(c[6 + shift]),
-            matra: cleanNum(c[7 + shift]), zakat: cleanNum(c[8 + shift]),
-            infaq: cleanNum(c[9 + shift]), bpjs: cleanNum(c[10 + shift]),
-            penerimaan_bersih: cleanNum(c[11 + shift])
+            tpp_kotor: cleanNum(c[3]), pot_tpp: cleanNum(c[4]),
+            penerimaan: 0, pot_koperasi: cleanNum(c[6]),
+            matra: cleanNum(c[5]), zakat: cleanNum(c[7]),
+            infaq: cleanNum(c[8]), bpjs: cleanNum(c[9]),
+            penerimaan_bersih: cleanNum(c[10])
           });
         } else {
           unknown.push(nama);
