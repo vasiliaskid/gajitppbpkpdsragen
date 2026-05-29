@@ -930,7 +930,7 @@
                 id="tpp-kotor">&mdash;</span></div>
           </div>
           <div class="slip-section section-deduct">
-            <div class="section-title">Potongan (BPJS + PPh)</div>
+            <div class="section-title">Potongan</div>
             <div id="tpp-potongan-list"></div>
           </div>
           <div class="slip-total">
@@ -1177,7 +1177,7 @@
       document.getElementById('tpp-kotor').textContent = fmt(slip.tpp_kotor);
 
       const pot = [
-        { label: 'Potongan TPP', val: slip.pot_tpp },
+        { label: 'BPJS + PPh', val: slip.pot_tpp },
         { label: 'Pot. Koperasi', val: slip.pot_koperasi },
         { label: 'Matra', val: slip.matra },
         { label: 'Zakat', val: slip.zakat },
@@ -1415,7 +1415,7 @@
       if (rows.length) {
         y += 2; doc.line(10, y, 138, y); y += 6;
         doc.setFontSize(8); doc.setFont(undefined, 'bold'); doc.setTextColor(90, 108, 126);
-        doc.text('POTONGAN (BPJS + PPh)', 10, y); y += 5;
+        doc.text('POTONGAN', 10, y); y += 5;
         rows.forEach(r => {
           const item = r.querySelector('.item')?.textContent || '';
           const amt = r.querySelector('.amount')?.textContent || '';
