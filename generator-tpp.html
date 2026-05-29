@@ -150,9 +150,8 @@
       <strong>Cara Pakai:</strong><br>
       1. Upload <code>data-tpp.js</code> lama (jika ada riwayat bulan sebelumnya).<br>
       2. Ketik bulan TPP.<br>
-      3. Paste data <b>ASN</b> dari sheet Potongan Internal ASN (tanpa header).<br>
-      4. Paste data <b>P3K</b> dari sheet Potongan Internal P3K (<b>tambahkan kolom NIP &amp; PIN</b> di Excel-nya agar
-      P3K bisa login).<br>
+      3. Paste data <b>ASN</b> dari Excel (tanpa header).<br>
+      4. Paste data <b>P3K</b> dari Excel (tanpa header).<br>
       5. Tekan Download.
     </div>
 
@@ -169,18 +168,15 @@
     </div>
 
     <div class="form-group">
-      <label><span class="badge">3</span> Paste Data ASN (dari Potongan Internal ASN)</label>
-      <div class="col-ref">No | Nama | NO REK | TPP Kotor | Pot TPP | Penerimaan | Pot Koperasi | Matra | Zakat | Infaq
-        | BPJS | Penerimaan Bersih</div>
-      <textarea id="input-asn" placeholder="Blok baris data ASN dari Excel, paste di sini..."></textarea>
+      <label><span class="badge">3</span> Paste Data ASN</label>
+      <div class="col-ref">NO | NAMA | NIP | GOL RUANG | KELAS JABATAN | TPP KOTOR | POT (BPJS+PPH) | TPP BERSIH | MATRA | KOPERASI | ZAKAT | INFAQ | BPJS | TRANSFER BANK | NOMOR REKENING</div>
+      <textarea id="input-asn" placeholder="Blok baris data ASN dari Excel (tanpa header), paste di sini..."></textarea>
     </div>
 
     <div class="form-group">
-      <label><span class="badge">4</span> Paste Data P3K (dari Potongan Internal P3K + kolom NIP & PIN)</label>
-      <div class="col-ref p3k">No | Nama | <b>NIP</b> | <b>PIN</b> | NO REK | TPP Kotor | Pot TPP | Penerimaan | Pot
-        Koperasi | Matra | Zakat | Infaq | BPJS | Penerimaan Bersih</div>
-      <textarea id="input-p3k"
-        placeholder="Blok baris data P3K dari Excel (sudah ditambah kolom NIP & PIN), paste di sini..."></textarea>
+      <label><span class="badge">4</span> Paste Data P3K</label>
+      <div class="col-ref p3k">NO | NAMA | NIP | GOL RUANG | KELAS JABATAN | TPP KOTOR | POT (BPJS+PPH) | TPP BERSIH | MATRA | KOPERASI | ZAKAT | INFAQ | BPJS | TRANSFER BANK | NOMOR REKENING</div>
+      <textarea id="input-p3k" placeholder="Blok baris data P3K dari Excel (tanpa header), paste di sini..."></textarea>
     </div>
 
     <button class="btn" onclick="generate()">⬇️ Download data-tpp.js</button>
@@ -220,7 +216,7 @@
       return isNaN(num) ? 0 : num;
     }
 
-    function parseASN(text) {
+    function parseData(text) {
       if (!text.trim()) return [];
       const lines = text.trim().split('\n');
       const result = [];
@@ -228,47 +224,18 @@
         const raw = lines[i].trim();
         if (!raw) continue;
         const c = raw.split('\t');
-        if (c.length < 5) continue;
-        result.push({
-          no: parseInt(cleanNumber(c[0])) || (i + 1),
-          nama: (c[1] || "").trim(),
-          nip: "",
-          pin: "",
-          no_rek: (c[2] || "").trim(),
-          tpp_kotor: cleanNumber(c[3]),
-          pot_tpp: cleanNumber(c[4]),
-          penerimaan: cleanNumber(c[5]),
-          pot_koperasi: cleanNumber(c[6]),
-          matra: cleanNumber(c[7]),
-          zakat: cleanNumber(c[8]),
-          infaq: cleanNumber(c[9]),
-          bpjs: cleanNumber(c[10]),
-          penerimaan_bersih: cleanNumber(c[11])
-        });
-      }
-      return result;
-    }
-
-    function parseP3K(text) {
-      if (!text.trim()) return [];
-      const lines = text.trim().split('\n');
-      const result = [];
-      for (let i = 0; i < lines.length; i++) {
-        const raw = lines[i].trim();
-        if (!raw) continue;
-        const c = raw.split('\t');
-        if (c.length < 7) continue;
+        if (c.length < 14) continue;
         result.push({
           no: parseInt(cleanNumber(c[0])) || (i + 1),
           nama: (c[1] || "").trim(),
           nip: (c[2] || "").trim(),
-          pin: (c[3] || "").trim(),
-          no_rek: (c[4] || "").trim(),
+          pin: "", // PIN dikelola di admin dashboard
+          no_rek: (c[14] || "").trim(),
           tpp_kotor: cleanNumber(c[5]),
           pot_tpp: cleanNumber(c[6]),
           penerimaan: cleanNumber(c[7]),
-          pot_koperasi: cleanNumber(c[8]),
-          matra: cleanNumber(c[9]),
+          matra: cleanNumber(c[8]),
+          pot_koperasi: cleanNumber(c[9]),
           zakat: cleanNumber(c[10]),
           infaq: cleanNumber(c[11]),
           bpjs: cleanNumber(c[12]),
@@ -287,8 +254,8 @@
       if (!bulan) { status.innerHTML = '<span style="color:red">Nama bulan wajib diisi!</span>'; return; }
       if (!asnText.trim() && !p3kText.trim()) { status.innerHTML = '<span style="color:red">Minimal salah satu kotak (ASN / P3K) harus terisi!</span>'; return; }
 
-      const asnData = parseASN(asnText);
-      const p3kData = parseP3K(p3kText);
+      const asnData = parseData(asnText);
+      const p3kData = parseData(p3kText);
       const combined = [...asnData, ...p3kData];
 
       if (combined.length === 0) {
