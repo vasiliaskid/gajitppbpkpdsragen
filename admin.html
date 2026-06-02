@@ -910,6 +910,33 @@
     </div>
   </div>
 
+  <!-- MODAL ARSIP -->
+  <div class="modal-overlay" id="arsip-modal">
+    <div class="modal" style="max-width:500px;">
+      <h3>📄 Detail Slip <span id="arsip-m-bulan" style="color:var(--navy);"></span></h3>
+      <div class="info-row"><span class="info-label">NIP</span><span class="info-value" id="arsip-m-nip">—</span></div>
+      <div class="info-row"><span class="info-label">Nama</span><span class="info-value" id="arsip-m-nama">—</span></div>
+      
+      <div id="arsip-m-gaji-section" style="display:none; margin-top:16px; border:1px solid var(--border); padding:12px; border-radius:6px; background:#fafbfc;">
+        <h4 style="font-size:13px; color:var(--navy); margin-bottom:8px;">💰 Rincian Gaji</h4>
+        <div class="info-row"><span class="info-label">Gaji Bruto</span><span class="info-value" id="arsip-m-gaji-bruto"></span></div>
+        <div class="info-row"><span class="info-label">Total Potongan</span><span class="info-value" id="arsip-m-gaji-pot"></span></div>
+        <div class="info-row"><span class="info-label">Penerimaan Bersih</span><span class="info-value" style="color:var(--green)" id="arsip-m-gaji-bersih"></span></div>
+      </div>
+
+      <div id="arsip-m-tpp-section" style="display:none; margin-top:12px; border:1px solid var(--border); padding:12px; border-radius:6px; background:#fafbfc;">
+        <h4 style="font-size:13px; color:var(--navy); margin-bottom:8px;">📈 Rincian TPP</h4>
+        <div class="info-row"><span class="info-label">TPP Kotor</span><span class="info-value" id="arsip-m-tpp-kotor"></span></div>
+        <div class="info-row"><span class="info-label">Total Potongan</span><span class="info-value" id="arsip-m-tpp-pot"></span></div>
+        <div class="info-row"><span class="info-label">Penerimaan Bersih</span><span class="info-value" style="color:var(--green)" id="arsip-m-tpp-bersih"></span></div>
+      </div>
+
+      <div class="modal-btns">
+        <button class="btn-modal-close" onclick="closeArsipModal()">Tutup</button>
+      </div>
+    </div>
+  </div>
+
   <!-- LOGIN SCREEN -->
   <div class="login-screen" id="login-screen">
     <div class="login-box">
@@ -960,6 +987,9 @@
         </div>
         <div class="nav-group">
           <div class="nav-label">Manajemen</div>
+          <div class="nav-item" id="nav-arsip" onclick="showPanel('arsip')">
+            <span class="icon">📁</span> Arsip Bulanan
+          </div>
           <div class="nav-item" id="nav-hapus-bulan" onclick="showPanel('hapus-bulan')">
             <span class="icon">🗑️</span> Hapus Data Bulan
           </div>
@@ -1099,6 +1129,48 @@
             <br>
             <button class="btn-import" id="btn-import-p3k" onclick="importTPP('P3K')">📤 Import TPP P3K</button>
             <div class="status-box" id="p3k-status"></div>
+          </div>
+        </div>
+
+        <!-- ══ PANEL: ARSIP BULANAN ══ -->
+        <div class="panel" id="panel-arsip">
+          <div class="card">
+            <div class="card-title">Arsip Data Bulanan</div>
+            <div class="card-sub">Lihat daftar pegawai dan rincian Gaji/TPP pada bulan yang telah di-import.</div>
+            <div class="import-row" style="grid-template-columns:1fr;">
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Pilih Bulan</label>
+                <div style="display:flex; gap:10px;">
+                  <select id="arsip-bulan-select" class="form-input" onchange="loadArsipData()" style="flex:1;">
+                    <option value="">(Memuat data bulan...)</option>
+                  </select>
+                  <button class="btn-import" style="padding:9px 16px;font-size:13px; background:var(--bg); color:var(--text); border:1px solid var(--border)" onclick="loadBulanList()">🔄 Refresh Bulan</button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="user-toolbar" style="margin-top:16px;">
+              <input type="text" class="search-input" id="arsip-search" placeholder="🔍 Cari NIP atau Nama..." oninput="filterArsip()">
+            </div>
+            <div class="user-table-wrap">
+              <table class="user-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>NIP</th>
+                    <th>Nama</th>
+                    <th>Tipe</th>
+                    <th>Gaji</th>
+                    <th>TPP</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="arsip-tbody">
+                  <tr class="empty-row"><td colspan="7">Pilih bulan terlebih dahulu</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="arsip-count" class="preview-count"></div>
           </div>
         </div>
 
@@ -1251,8 +1323,8 @@
     }
 
     // ── Navigation ────────────────────────────
-    const panels = ['master', 'gaji', 'tpp-asn', 'tpp-p3k', 'hapus-bulan', 'users'];
-    const titles = { 'master': 'Import Master Pegawai', 'gaji': 'Import Gaji ASN', 'tpp-asn': 'Import TPP ASN', 'tpp-p3k': 'Import TPP P3K', 'hapus-bulan': 'Hapus Data Bulan', 'users': 'Kelola Akun Pegawai' };
+    const panels = ['master', 'gaji', 'tpp-asn', 'tpp-p3k', 'arsip', 'hapus-bulan', 'users'];
+    const titles = { 'master': 'Import Master Pegawai', 'gaji': 'Import Gaji ASN', 'tpp-asn': 'Import TPP ASN', 'tpp-p3k': 'Import TPP P3K', 'arsip': 'Arsip Data Bulanan', 'hapus-bulan': 'Hapus Data Bulan', 'users': 'Kelola Akun Pegawai' };
     function showPanel(id) {
       panels.forEach(p => {
         document.getElementById('panel-' + p).classList.toggle('active', p === id);
@@ -1261,7 +1333,7 @@
       document.getElementById('topbar-title').textContent = titles[id];
       if (window.innerWidth <= 768) toggleSidebar(false);
       if (id === 'users') loadUsers();
-      if (id === 'hapus-bulan') loadBulanList();
+      if (id === 'hapus-bulan' || id === 'arsip') loadBulanList();
     }
 
     function getPegawaiMatch(nama, norek) {
@@ -1563,9 +1635,11 @@
     // ── Hapus Data Bulan ──────────────────────
     async function loadBulanList() {
       const sel = document.getElementById('hapus-bulan-select');
+      const selArsip = document.getElementById('arsip-bulan-select');
       const btn = document.getElementById('btn-hapus-bulan');
       const detail = document.getElementById('hapus-bulan-detail');
       sel.innerHTML = '<option value="">(Memuat...)</option>';
+      if (selArsip) selArsip.innerHTML = '<option value="">(Memuat...)</option>';
       btn.disabled = true;
       detail.innerHTML = '';
 
@@ -1594,10 +1668,12 @@
       const bulanList = Object.keys(bulanMap);
       if (bulanList.length === 0) {
         sel.innerHTML = '<option value="">(Tidak ada data bulan)</option>';
+        if (selArsip) selArsip.innerHTML = '<option value="">(Tidak ada data bulan)</option>';
         return;
       }
 
       sel.innerHTML = '<option value="">(Pilih bulan)</option>';
+      if (selArsip) selArsip.innerHTML = '<option value="">(Pilih bulan)</option>';
       bulanList.forEach(b => {
         const info = bulanMap[b];
         let parts = [];
@@ -1608,6 +1684,12 @@
         opt.value = b;
         opt.textContent = b + '  (' + parts.join(', ') + ')';
         sel.appendChild(opt);
+        if (selArsip) {
+          const optArsip = document.createElement('option');
+          optArsip.value = b;
+          optArsip.textContent = b + '  (' + parts.join(', ') + ')';
+          selArsip.appendChild(optArsip);
+        }
       });
 
       sel.onchange = function() {
@@ -1706,6 +1788,143 @@
       // Refresh list
       document.getElementById('hapus-options-container').style.display = 'none';
       await loadBulanList();
+    }
+
+    // ── Arsip Data Bulanan ────────────────────
+    let arsipData = [];
+
+    async function loadArsipData() {
+      const bulan = document.getElementById('arsip-bulan-select').value;
+      const tbody = document.getElementById('arsip-tbody');
+      const countEl = document.getElementById('arsip-count');
+      
+      if (!bulan) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Pilih bulan terlebih dahulu</td></tr>';
+        countEl.textContent = '';
+        arsipData = [];
+        return;
+      }
+
+      setLoad(true);
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Memuat data...</td></tr>';
+      
+      const [gajiRes, tppRes] = await Promise.all([
+        db.from('slip_gaji').select('*').eq('bulan', bulan),
+        db.from('slip_tpp').select('*').eq('bulan', bulan)
+      ]);
+      
+      setLoad(false);
+
+      if (gajiRes.error || tppRes.error) {
+        toast('Gagal memuat data arsip', 'e');
+        return;
+      }
+
+      // Gabungkan data berdasarkan NIP
+      const map = {};
+      
+      (gajiRes.data || []).forEach(g => {
+        map[g.nip] = {
+          nip: g.nip,
+          nama: g.nama,
+          tipe: 'ASN',
+          gaji: g,
+          tpp: null
+        };
+      });
+
+      (tppRes.data || []).forEach(t => {
+        if (!map[t.nip]) {
+          map[t.nip] = {
+            nip: t.nip,
+            nama: t.nama,
+            tipe: t.tipe,
+            gaji: null,
+            tpp: t
+          };
+        } else {
+          map[t.nip].tpp = t;
+        }
+      });
+
+      arsipData = Object.values(map).sort((a, b) => a.nama.localeCompare(b.nama));
+      filterArsip();
+    }
+
+    function filterArsip() {
+      const q = document.getElementById('arsip-search').value.toLowerCase();
+      const filtered = arsipData.filter(d => 
+        !q || d.nip.includes(q) || d.nama.toLowerCase().includes(q)
+      );
+      renderArsipTable(filtered);
+    }
+
+    function formatRupiah(angka) {
+      if (!angka) return 'Rp 0';
+      return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    function renderArsipTable(data) {
+      const tbody = document.getElementById('arsip-tbody');
+      document.getElementById('arsip-count').textContent = `Menampilkan ${data.length} dari ${arsipData.length} pegawai di bulan ini.`;
+      
+      if (!data.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Tidak ada data ditemukan</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.map((d, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td style="font-family:monospace;font-size:12px">${d.nip}</td>
+          <td><strong>${d.nama}</strong></td>
+          <td><span class="${d.tipe === 'ASN' ? 'badge-asn' : 'badge-p3k'}">${d.tipe}</span></td>
+          <td>${d.gaji ? '✅ Ada' : '<span style="color:var(--text-sec)">—</span>'}</td>
+          <td>${d.tpp ? '✅ Ada' : '<span style="color:var(--text-sec)">—</span>'}</td>
+          <td>
+            <button class="btn-sm btn-view" onclick="viewArsipDetail('${d.nip}')">👁 Detail</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function viewArsipDetail(nip) {
+      const d = arsipData.find(x => x.nip === nip);
+      if (!d) return;
+
+      const bulan = document.getElementById('arsip-bulan-select').value;
+      document.getElementById('arsip-m-bulan').textContent = bulan;
+      document.getElementById('arsip-m-nip').textContent = d.nip;
+      document.getElementById('arsip-m-nama').textContent = d.nama;
+
+      const secGaji = document.getElementById('arsip-m-gaji-section');
+      if (d.gaji) {
+        secGaji.style.display = 'block';
+        document.getElementById('arsip-m-gaji-bruto').textContent = formatRupiah(d.gaji.gaji);
+        // Hitung total potongan intern + ekstern
+        const potEkstern = (d.gaji.pot_bank_jateng||0) + (d.gaji.dplk||0) + (d.gaji.bri||0) + (d.gaji.bkk_karangmalang||0) + (d.gaji.joko_tingkir||0) + (d.gaji.kop_sedya_rhy||0) + (d.gaji.kop_perdagangan||0);
+        const potIntern = (d.gaji.korpri||0) + (d.gaji.dh_wanita||0) + (d.gaji.sosial_bppkad||0) + (d.gaji.beras||0) + (d.gaji.zakat||0) + (d.gaji.besukan_tu||0) + (d.gaji.pmi||0);
+        document.getElementById('arsip-m-gaji-pot').textContent = formatRupiah(potEkstern + potIntern);
+        document.getElementById('arsip-m-gaji-bersih').textContent = formatRupiah(d.gaji.penerimaan_bersih);
+      } else {
+        secGaji.style.display = 'none';
+      }
+
+      const secTpp = document.getElementById('arsip-m-tpp-section');
+      if (d.tpp) {
+        secTpp.style.display = 'block';
+        document.getElementById('arsip-m-tpp-kotor').textContent = formatRupiah(d.tpp.tpp_kotor);
+        document.getElementById('arsip-m-tpp-pot').textContent = formatRupiah((d.tpp.pot_tpp||0) + (d.tpp.pot_koperasi||0) + (d.tpp.matra||0) + (d.tpp.zakat||0) + (d.tpp.infaq||0) + (d.tpp.bpjs||0));
+        document.getElementById('arsip-m-tpp-bersih').textContent = formatRupiah(d.tpp.penerimaan_bersih);
+      } else {
+        secTpp.style.display = 'none';
+      }
+
+      document.getElementById('arsip-modal').classList.add('show');
+    }
+
+    function closeArsipModal() {
+      document.getElementById('arsip-modal').classList.remove('show');
     }
   </script>
 </body>
