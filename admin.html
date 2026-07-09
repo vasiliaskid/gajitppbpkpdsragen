@@ -976,7 +976,8 @@
         <div class="nav-group">
           <div class="nav-label">Import Data Bulanan</div>
           <div class="nav-item" id="nav-gaji" onclick="showPanel('gaji')">
-            <span class="icon">📥</span> Gaji ASN
+            <span class="icon">📥</span> Gaji ASN + P3K
+          </div>
           </div>
           <div class="nav-item" id="nav-tpp-asn" onclick="showPanel('tpp-asn')">
             <span class="icon">📥</span> TPP ASN
@@ -1037,11 +1038,11 @@
           </div>
         </div>
 
-        <!-- ══ PANEL: IMPORT GAJI ASN ══ -->
+        <!-- ══ PANEL: IMPORT GAJI ══ -->
         <div class="panel" id="panel-gaji">
           <div class="card">
-            <div class="card-title">Import Data Gaji ASN Bulanan</div>
-            <div class="card-sub">Lakukan penggabungan 2 Sheet Excel Gaji</div>
+            <div class="card-title">Import Data Gaji Bulanan</div>
+            <div class="card-sub">Import gaji ASN dan P3K dari Excel (format kolom sama)</div>
             <div class="info-box">
               Pastikan Anda sudah mengupload <strong>Master Pegawai</strong> agar sistem dapat mengenali Nama/No Rek
               pada data di bawah, dan secara otomatis mencari NIP pegawai.
@@ -1049,34 +1050,34 @@
 
             <div class="import-row">
               <div class="form-group" style="margin:0">
-                <label class="form-label">Bulan Gaji (contoh: April 2026)</label>
-                <input type="text" id="gaji-bulan" class="form-input" placeholder="April 2026">
+                <label class="form-label">Bulan Gaji (contoh: Juli 2026)</label>
+                <input type="text" id="gaji-bulan" class="form-input" placeholder="Juli 2026">
               </div>
             </div>
 
             <div class="import-row">
               <div>
-                <label class="form-label">Sheet 1: GAJI BRUTO</label>
+                <label class="form-label">Gaji ASN</label>
                 <div class="col-ref" style="font-size:10px; padding:8px;">
                   NO | NAMA | NO REK | GAJI BRUTO | Bank Jateng | DPLK | BRI | BKK KARANGMALANG | BPR DJOKO TINGKIR |
                   KOP SEDIA RAHAYU | KOP PERDAGANGAN | JML POT EKSTERN | JML POT INTERN | TOTAL POTONGAN | GAJI BERSIH
                 </div>
                 <textarea class="paste-area" id="gaji-paste-bruto" style="min-height:140px;"
-                  placeholder="Paste Sheet Gaji Bruto..."></textarea>
+                  placeholder="Paste data Gaji ASN dari Excel..."></textarea>
               </div>
               <div>
-                <label class="form-label">Sheet 2: POTONGAN INTERNAL</label>
-                <div class="col-ref" style="font-size:10px; padding:8px;">
-                  NO | NAMA | NO REK | GAJI BRUTO | KORPRI | DH. Wanita | Sosial BPPKAD | Beras | ZAKAT | Besukan TU |
-                  PMI | DPLK | TOTAL
+                <label class="form-label" style="color:var(--orange);">Gaji P3K</label>
+                <div class="col-ref" style="font-size:10px; padding:8px; background:#fff3e0; border-color:#ffe0b2; color:#e65100;">
+                  NO | NAMA | NO REK | GAJI BRUTO | Bank Jateng | DPLK | BRI | BKK KARANGMALANG | BPR DJOKO TINGKIR |
+                  KOP SEDIA RAHAYU | KOP PERDAGANGAN | JML POT EKSTERN | JML POT INTERN | TOTAL POTONGAN | GAJI BERSIH
                 </div>
-                <textarea class="paste-area" id="gaji-paste-internal" style="min-height:140px;"
-                  placeholder="Paste Sheet Potongan Internal..."></textarea>
+                <textarea class="paste-area" id="gaji-paste-p3k" style="min-height:140px;"
+                  placeholder="Paste data Gaji P3K dari Excel..."></textarea>
               </div>
             </div>
 
             <button class="btn-import" id="btn-import-gaji" onclick="importGaji()">📤 Proses &amp; Import Gaji
-              ASN</button>
+              ASN + P3K</button>
             <div class="status-box" id="gaji-status"></div>
             <div id="gaji-preview" style="margin-top:16px;"></div>
           </div>
@@ -1324,7 +1325,7 @@
 
     // ── Navigation ────────────────────────────
     const panels = ['master', 'gaji', 'tpp-asn', 'tpp-p3k', 'arsip', 'hapus-bulan', 'users'];
-    const titles = { 'master': 'Import Master Pegawai', 'gaji': 'Import Gaji ASN', 'tpp-asn': 'Import TPP ASN', 'tpp-p3k': 'Import TPP P3K', 'arsip': 'Arsip Data Bulanan', 'hapus-bulan': 'Hapus Data Bulan', 'users': 'Kelola Akun Pegawai' };
+    const titles = { 'master': 'Import Master Pegawai', 'gaji': 'Import Gaji ASN + P3K', 'tpp-asn': 'Import TPP ASN', 'tpp-p3k': 'Import TPP P3K', 'arsip': 'Arsip Data Bulanan', 'hapus-bulan': 'Hapus Data Bulan', 'users': 'Kelola Akun Pegawai' };
     function showPanel(id) {
       panels.forEach(p => {
         document.getElementById('panel-' + p).classList.toggle('active', p === id);
@@ -1396,71 +1397,77 @@
       }
     }
 
-    // ── Import Gaji ASN ────────────────────────
-    async function importGaji() {
-      const bulan = document.getElementById('gaji-bulan').value.trim();
-      if (!bulan) { setStatus('gaji-status', '⚠️ Isi bulan terlebih dahulu', 'error'); return; }
-
-      const txtBruto = document.getElementById('gaji-paste-bruto').value;
-      const txtInter = document.getElementById('gaji-paste-internal').value;
-
-      let bruto = txtBruto.trim().split('\n').filter(r => r.trim() !== '');
-      let inter = txtInter.trim().split('\n').filter(r => r.trim() !== '');
-
-      let dbObj = {};
-      let parseErr = [];
-      // 1. Process Bruto
-      bruto.forEach(line => {
+    // ── Import Gaji (ASN + P3K) ────────────────────────
+    function parseGajiBruto(text) {
+      let rows = [];
+      text.trim().split('\n').filter(r => r.trim() !== '').forEach(line => {
         let c = line.split('\t');
         if (c.length < 5 || c[0].toUpperCase() === 'NO') return;
-        let n = c[1].trim();
-        dbObj[n.toLowerCase()] = {
-          nama: n, no_rek: c[2].trim(),
+        rows.push({
+          nama: c[1].trim(), no_rek: c[2].trim(),
           gaji: cleanNum(c[3]), pot_bank_jateng: cleanNum(c[4]),
           dplk: cleanNum(c[5]), bri: cleanNum(c[6]),
           bkk_karangmalang: cleanNum(c[7]), joko_tingkir: cleanNum(c[8]),
           kop_sedya_rhy: cleanNum(c[9]), kop_perdagangan: cleanNum(c[10]),
           penerimaan_bersih: cleanNum(c[14] || c[c.length - 1])
-        };
+        });
       });
-      // 2. Process Internal
-      inter.forEach(line => {
-        let c = line.split('\t');
-        if (c.length < 5 || c[0].toUpperCase() === 'NO') return;
-        let n = c[1].trim().toLowerCase();
-        if (!dbObj[n]) dbObj[n] = { nama: c[1].trim(), no_rek: c[2].trim() };
-        dbObj[n].korpri = cleanNum(c[4]);
-        dbObj[n].dh_wanita = cleanNum(c[5]);
-        dbObj[n].sosial_bppkad = cleanNum(c[6]);
-        dbObj[n].beras = cleanNum(c[7]);
-        dbObj[n].zakat = cleanNum(c[8]);
-        dbObj[n].besukan_tu = cleanNum(c[9]);
-        dbObj[n].pmi = cleanNum(c[10]);
-        let dInter = cleanNum(c[11]);
-        if (dInter > 0) dbObj[n].dplk = dInter;
-      });
+      return rows;
+    }
 
-      let results = Object.values(dbObj);
-      if (!results.length) { setStatus('gaji-status', '⚠️ Tidak ada data ditemukan pada text-area.', 'error'); return; }
+    async function importGaji() {
+      const bulan = document.getElementById('gaji-bulan').value.trim();
+      if (!bulan) { setStatus('gaji-status', '⚠️ Isi bulan terlebih dahulu', 'error'); return; }
+
+      const txtAsn = document.getElementById('gaji-paste-bruto').value;
+      const txtP3k = document.getElementById('gaji-paste-p3k').value;
+
+      let asnRows = txtAsn.trim() ? parseGajiBruto(txtAsn) : [];
+      let p3kRows = txtP3k.trim() ? parseGajiBruto(txtP3k) : [];
+
+      if (!asnRows.length && !p3kRows.length) {
+        setStatus('gaji-status', '⚠️ Tidak ada data ditemukan. Minimal isi salah satu kotak (ASN / P3K).', 'error');
+        return;
+      }
 
       let toInsert = [];
       let unknown = [];
 
-      results.forEach(r => {
+      // Process ASN
+      asnRows.forEach(r => {
         let m = getPegawaiMatch(r.nama, r.no_rek);
         if (m) {
           toInsert.push({
             nip: m.nip, nama: r.nama, no_rek: r.no_rek, bulan,
             gaji: r.gaji || 0, pot_bank_jateng: r.pot_bank_jateng || 0, dplk: r.dplk || 0,
-            pot_bppkad: 0, korpri: r.korpri || 0, dh_wanita: r.dh_wanita || 0,
-            sosial_bppkad: r.sosial_bppkad || 0, beras: r.beras || 0, zakat: r.zakat || 0,
-            besukan_tu: r.besukan_tu || 0, pmi: r.pmi || 0, kop_sedya_rhy: r.kop_sedya_rhy || 0,
+            pot_bppkad: 0, korpri: 0, dh_wanita: 0,
+            sosial_bppkad: 0, beras: 0, zakat: 0,
+            besukan_tu: 0, pmi: 0, kop_sedya_rhy: r.kop_sedya_rhy || 0,
             kop_perdagangan: r.kop_perdagangan || 0, bkk_gesi: 0, joko_tingkir: r.joko_tingkir || 0,
             bri: r.bri || 0, bkk_karangmalang: r.bkk_karangmalang || 0, bjb: 0,
             penerimaan_bersih: r.penerimaan_bersih || 0
           });
         } else {
-          unknown.push(r.nama);
+          unknown.push('[ASN] ' + r.nama);
+        }
+      });
+
+      // Process P3K
+      p3kRows.forEach(r => {
+        let m = getPegawaiMatch(r.nama, r.no_rek);
+        if (m) {
+          toInsert.push({
+            nip: m.nip, nama: r.nama, no_rek: r.no_rek, bulan,
+            gaji: r.gaji || 0, pot_bank_jateng: r.pot_bank_jateng || 0, dplk: r.dplk || 0,
+            pot_bppkad: 0, korpri: 0, dh_wanita: 0,
+            sosial_bppkad: 0, beras: 0, zakat: 0,
+            besukan_tu: 0, pmi: 0, kop_sedya_rhy: r.kop_sedya_rhy || 0,
+            kop_perdagangan: r.kop_perdagangan || 0, bkk_gesi: 0, joko_tingkir: r.joko_tingkir || 0,
+            bri: r.bri || 0, bkk_karangmalang: r.bkk_karangmalang || 0, bjb: 0,
+            penerimaan_bersih: r.penerimaan_bersih || 0
+          });
+        } else {
+          unknown.push('[P3K] ' + r.nama);
         }
       });
 
@@ -1478,11 +1485,11 @@
       if (error) {
         setStatus('gaji-status', '❌ Error DB: ' + error.message, 'error');
       } else {
-        let msg = `✅ Berhasil import ${toInsert.length} slip gaji ASN.`;
+        let msg = `✅ Berhasil import ${toInsert.length} slip gaji (${asnRows.length} ASN + ${p3kRows.length} P3K).`;
         if (unknown.length > 0) msg += `\n⚠️ PERINGATAN: ${unknown.length} Nama DITOLAK karena NIP tidak ditemukan (Belum di-Import Master):\n${unknown.slice(0, 10).join(', ')}`;
         setStatus('gaji-status', msg, unknown.length > 0 ? 'error' : 'success');
         document.getElementById('gaji-paste-bruto').value = '';
-        document.getElementById('gaji-paste-internal').value = '';
+        document.getElementById('gaji-paste-p3k').value = '';
         toast('Selesai diproses', 's');
       }
     }
