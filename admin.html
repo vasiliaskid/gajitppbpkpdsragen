@@ -1225,7 +1225,7 @@
             <div class="card-title">Aksi Data Bulan</div>
             <div class="card-sub">Pilih bulan untuk menghapus data atau mengirimkan notifikasi WhatsApp massal.</div>
             <div class="info-box">
-              <strong>⚠️ Perhatian:</strong> Fitur Notifikasi WA akan mengirimkan pesan otomatis melalui Fonnte ke
+              <strong>⚠️ Perhatian:</strong> Fitur Notifikasi WA akan mengirimkan pesan otomatis melalui Sistem ke
               pegawai yang sudah memiliki <strong>No WA</strong> dan terdaftar di pilihan (Gaji/TPP) yang dicentang.
             </div>
             <div class="import-row" style="grid-template-columns:1fr;">
@@ -1238,7 +1238,7 @@
             </div>
             <div id="hapus-options-container"
               style="margin-top: 16px; display: none; background: #fff; border: 1px solid var(--border); padding: 15px; border-radius: 8px;">
-              <div style="font-weight: 600; margin-bottom: 10px; color: var(--navy);">Pilih Data yang Akan Dihapus:
+              <div style="font-weight: 600; margin-bottom: 10px; color: var(--navy);">Pilih Data yang Akan Dieksekusi:
               </div>
               <div id="hapus-options-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
             </div>
@@ -1346,7 +1346,7 @@
     let allUsers = [];
     // Load users list immediately upon app show to memorize NIP matching matters
     async function initMasterData() {
-      const { data } = await db.from('pegawai').select('nip,nama,no_rek,tipe');
+      const { data } = await db.from('pegawai').select('nip,nama,no_rek,tipe,no_wa');
       if (data) allUsers = data;
     }
 
