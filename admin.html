@@ -1655,21 +1655,24 @@
 
       // Ambil semua bulan unik dari slip_gaji dan slip_tpp
       const [gajiRes, tppRes] = await Promise.all([
-        db.from('slip_gaji').select('bulan'),
-        db.from('slip_tpp').select('bulan,tipe')
+        db.from('slip_gaji').select('bulan, nip'),
+        db.from('slip_tpp').select('bulan, tipe')
       ]);
 
       const bulanMap = {};
 
       if (gajiRes.data) {
         gajiRes.data.forEach(r => {
-          if (!bulanMap[r.bulan]) bulanMap[r.bulan] = { gaji: 0, tpp_asn: 0, tpp_p3k: 0 };
-          bulanMap[r.bulan].gaji++;
+          if (!bulanMap[r.bulan]) bulanMap[r.bulan] = { gaji_asn: 0, gaji_p3k: 0, tpp_asn: 0, tpp_p3k: 0 };
+          let user = allUsers.find(u => u.nip === r.nip);
+          let tipe = user ? user.tipe : 'ASN';
+          if (tipe === 'ASN') bulanMap[r.bulan].gaji_asn++;
+          else bulanMap[r.bulan].gaji_p3k++;
         });
       }
       if (tppRes.data) {
         tppRes.data.forEach(r => {
-          if (!bulanMap[r.bulan]) bulanMap[r.bulan] = { gaji: 0, tpp_asn: 0, tpp_p3k: 0 };
+          if (!bulanMap[r.bulan]) bulanMap[r.bulan] = { gaji_asn: 0, gaji_p3k: 0, tpp_asn: 0, tpp_p3k: 0 };
           if (r.tipe === 'ASN') bulanMap[r.bulan].tpp_asn++;
           else bulanMap[r.bulan].tpp_p3k++;
         });
@@ -1687,7 +1690,8 @@
       bulanList.forEach(b => {
         const info = bulanMap[b];
         let parts = [];
-        if (info.gaji > 0) parts.push('Gaji: ' + info.gaji);
+        if (info.gaji_asn > 0) parts.push('Gaji ASN: ' + info.gaji_asn);
+        if (info.gaji_p3k > 0) parts.push('Gaji P3K: ' + info.gaji_p3k);
         if (info.tpp_asn > 0) parts.push('TPP ASN: ' + info.tpp_asn);
         if (info.tpp_p3k > 0) parts.push('TPP P3K: ' + info.tpp_p3k);
         const opt = document.createElement('option');
@@ -1711,8 +1715,11 @@
         if (v && bulanMap[v]) {
           const info = bulanMap[v];
           let html = '';
-          if (info.gaji > 0) {
-            html += `<label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" class="cb-hapus" value="gaji" onchange="checkHapusBtn()"> Gaji ASN (${info.gaji} record)</label>`;
+          if (info.gaji_asn > 0) {
+            html += `<label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" class="cb-hapus" value="gaji_asn" onchange="checkHapusBtn()"> Gaji ASN (${info.gaji_asn} record)</label>`;
+          }
+          if (info.gaji_p3k > 0) {
+            html += `<label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" class="cb-hapus" value="gaji_p3k" onchange="checkHapusBtn()"> Gaji P3K (${info.gaji_p3k} record)</label>`;
           }
           if (info.tpp_asn > 0) {
             html += `<label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" class="cb-hapus" value="tpp_asn" onchange="checkHapusBtn()"> TPP ASN (${info.tpp_asn} record)</label>`;
@@ -1745,7 +1752,8 @@
       if (checkedBoxes.length === 0) return;
 
       const jenisText = checkedBoxes.map(v => {
-        if (v === 'gaji') return 'Gaji ASN';
+        if (v === 'gaji_asn') return 'Gaji ASN';
+        if (v === 'gaji_p3k') return 'Gaji P3K';
         if (v === 'tpp_asn') return 'TPP ASN';
         if (v === 'tpp_p3k') return 'TPP P3K';
       }).join(', ');
@@ -1759,14 +1767,40 @@
       let totalDeleted = [];
 
       // Hapus dari slip_gaji jika terpilih
-      if (checkedBoxes.includes('gaji')) {
-        const { data: gajiDel, error: errGaji } = await db.from('slip_gaji').delete().eq('bulan', bulan).select('id');
-        if (errGaji) {
-          setLoad(false); btn.disabled = false;
-          setStatus('hapus-bulan-status', '❌ Error hapus slip gaji: ' + errGaji.message, 'error');
-          return;
+      if (checkedBoxes.includes('gaji_asn') || checkedBoxes.includes('gaji_p3k')) {
+        const { data: gData } = await db.from('slip_gaji').select('id, nip').eq('bulan', bulan);
+        let asnIds = [];
+        let p3kIds = [];
+        
+        if (gData) {
+          gData.forEach(g => {
+            let u = allUsers.find(x => x.nip === g.nip);
+            let t = u ? u.tipe : 'ASN';
+            if (t === 'ASN') asnIds.push(g.id);
+            else p3kIds.push(g.id);
+          });
         }
-        totalDeleted.push(`Slip Gaji dihapus: ${gajiDel ? gajiDel.length : 0} record`);
+
+        if (checkedBoxes.includes('gaji_asn') && asnIds.length > 0) {
+          // split into chunks of 1000 if needed, but usually won't exceed PostgREST limits for this size
+          const { data: gajiAsnDel, error: errGajiAsn } = await db.from('slip_gaji').delete().in('id', asnIds).select('id');
+          if (errGajiAsn) {
+            setLoad(false); btn.disabled = false;
+            setStatus('hapus-bulan-status', '❌ Error hapus slip gaji ASN: ' + errGajiAsn.message, 'error');
+            return;
+          }
+          totalDeleted.push(`Slip Gaji ASN dihapus: ${gajiAsnDel ? gajiAsnDel.length : 0} record`);
+        }
+
+        if (checkedBoxes.includes('gaji_p3k') && p3kIds.length > 0) {
+          const { data: gajiP3kDel, error: errGajiP3k } = await db.from('slip_gaji').delete().in('id', p3kIds).select('id');
+          if (errGajiP3k) {
+            setLoad(false); btn.disabled = false;
+            setStatus('hapus-bulan-status', '❌ Error hapus slip gaji P3K: ' + errGajiP3k.message, 'error');
+            return;
+          }
+          totalDeleted.push(`Slip Gaji P3K dihapus: ${gajiP3kDel ? gajiP3kDel.length : 0} record`);
+        }
       }
 
       // Hapus dari slip_tpp ASN
