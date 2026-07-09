@@ -1281,6 +1281,7 @@
                     <th>Nama</th>
                     <th>Tipe</th>
                     <th>No. Rek</th>
+                    <th>No WA</th>
                     <th>PIN Default</th>
                     <th>PIN Aktif</th>
                     <th>Aksi</th>
@@ -1288,7 +1289,7 @@
                 </thead>
                 <tbody id="user-tbody">
                   <tr class="empty-row">
-                    <td colspan="8">Klik Refresh untuk memuat data</td>
+                    <td colspan="9">Klik Refresh untuk memuat data</td>
                   </tr>
                 </tbody>
               </table>
@@ -1708,7 +1709,7 @@
       const tbody = document.getElementById('user-tbody');
       document.getElementById('user-count').textContent = `Menampilkan ${users.length} dari ${allUsers.length} pegawai`;
       if (!users.length) {
-        tbody.innerHTML = '<tr class="empty-row"><td colspan="8">Tidak ada data</td></tr>';
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="9">Tidak ada data</td></tr>';
         return;
       }
       tbody.innerHTML = users.map((u, i) => `
@@ -1718,6 +1719,7 @@
           <td><strong>${u.nama}</strong></td>
           <td><span class="${u.tipe === 'ASN' ? 'badge-asn' : 'badge-p3k'}">${u.tipe}</span></td>
           <td style="font-family:monospace;font-size:12px">${u.no_rek || '—'}</td>
+          <td style="font-family:monospace;font-size:12px">${u.no_wa || '—'}</td>
           <td><span class="pin-field">${u.pin_default}</span></td>
           <td><span class="pin-field ${u.pin !== u.pin_default ? 'badge-asn' : ''}">${u.pin}</span></td>
           <td>
@@ -1972,8 +1974,8 @@
       }
 
       const waString = validWa.join(',');
-      const currentUrl = window.location.href.split('?')[0].split('#')[0].replace('/admin.html', '');
-      const msg = `Kepada Bapak/Ibu BPKPD Kabupaten Sragen,\n\nSlip Gaji / TPP Anda untuk bulan *${bulan}* sudah tersedia.\n\nSilakan cek di portal: ${currentUrl}\n(Login menggunakan NIP dan PIN Anda)\n\nTerima kasih.`;
+      const currentUrl = 'https://gajitppbpkpdsragen.netlify.app/';
+      const msg = `Kepada Bapak/Ibu Karyawan/Karyawati BPKPD Kabupaten Sragen,\n\nSlip Gaji / TPP Anda untuk bulan *${bulan}* sudah tersedia.\n\nSilakan cek di portal: ${currentUrl}\n(Login menggunakan NIP dan PIN Anda)\n\nTerima kasih.`;
 
       try {
         const response = await fetch("https://api.fonnte.com/send", {
