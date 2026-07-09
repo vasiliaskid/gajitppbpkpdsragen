@@ -76,7 +76,8 @@ CREATE TABLE IF NOT EXISTS admin_config (
 );
 
 INSERT INTO admin_config (key, value) VALUES
-  ('admin_password', 'Admin@BPKPD2026')
+  ('admin_password', 'Admin@BPKPD2026'),
+  ('fonnte_token', 'WafxxA5vafnvoriC797L')
 ON CONFLICT (key) DO NOTHING;
 
 -- Disable RLS (aplikasi internal/intranet)
@@ -118,6 +119,7 @@ BEGIN
                       ELSE pegawai.pin
                     END,
       updated_at  = NOW();
+      -- Perhatikan: no_wa TIDAK di-update di sini agar nomor yang diisi manual lewat web tidak tertimpa saat import ulang master
   END LOOP;
 END;
 $$ LANGUAGE plpgsql;
