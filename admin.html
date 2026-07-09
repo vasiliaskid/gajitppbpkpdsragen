@@ -1834,10 +1834,12 @@
       const map = {};
       
       (gajiRes.data || []).forEach(g => {
+        let masterUser = allUsers.find(u => u.nip === g.nip);
+        let realTipe = masterUser ? masterUser.tipe : 'ASN';
         map[g.nip] = {
           nip: g.nip,
           nama: g.nama,
-          tipe: 'ASN',
+          tipe: realTipe,
           gaji: g,
           tpp: null
         };
@@ -1854,6 +1856,8 @@
           };
         } else {
           map[t.nip].tpp = t;
+          // Pastikan tipe di-update ke tipe dari tabel slip_tpp (yang pasti akurat) jika sebelumnya ter-set ASN
+          if (t.tipe) map[t.nip].tipe = t.tipe;
         }
       });
 
