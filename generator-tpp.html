@@ -169,13 +169,15 @@
 
     <div class="form-group">
       <label><span class="badge">3</span> Paste Data ASN</label>
-      <div class="col-ref">NO | NAMA | NIP | TPP KOTOR | POT (BPJS+PPH) | MATRA | KOPERASI | ZAKAT | INFAQ | BPJS | TRANSFER BANK</div>
+      <div class="col-ref">NO | NAMA | NIP | GOL/RUANG | KELAS JABATAN | TPP KOTOR | POT (BPJS+PPH) | MATRA | KOPERASI | ZAKAT | INFAQ | BPJS | BPJS KES 1% AKL |
+        TRANSFER BANK</div>
       <textarea id="input-asn" placeholder="Blok baris data ASN dari Excel (tanpa header), paste di sini..."></textarea>
     </div>
 
     <div class="form-group">
       <label><span class="badge">4</span> Paste Data P3K</label>
-      <div class="col-ref p3k">NO | NAMA | NIP | TPP KOTOR | POT (BPJS+PPH) | MATRA | KOPERASI | ZAKAT | INFAQ | BPJS | TRANSFER BANK</div>
+      <div class="col-ref p3k">NO | NAMA | NIP | GOL/RUANG | KELAS JABATAN | TPP KOTOR | POT (BPJS+PPH) | MATRA | KOPERASI | ZAKAT | INFAQ | BPJS | BPJS KES 1% AKL |
+        TRANSFER BANK</div>
       <textarea id="input-p3k" placeholder="Blok baris data P3K dari Excel (tanpa header), paste di sini..."></textarea>
     </div>
 
@@ -224,22 +226,26 @@
         const raw = lines[i].trim();
         if (!raw) continue;
         const c = raw.split('\t');
-        if (c.length < 11) continue;
+        if (c.length < 14) continue;
+        // NO(0) | NAMA(1) | NIP(2) | GOL/RUANG(3) | KELAS JABATAN(4)
+        // | TPP KOTOR(5) | POT BPJS+PPH(6) | MATRA(7) | KOPERASI(8) | ZAKAT(9)
+        // | INFAQ(10) | BPJS(11) | BPJS KES 1% AKL(12) | TRANSFER BANK(13)
         result.push({
           no: parseInt(cleanNumber(c[0])) || (i + 1),
           nama: (c[1] || "").trim(),
           nip: (c[2] || "").trim(),
           pin: "", // PIN dikelola di admin dashboard
           no_rek: "", // Dihapus dari excel TPP
-          tpp_kotor: cleanNumber(c[3]),
-          pot_tpp: cleanNumber(c[4]),
+          tpp_kotor: cleanNumber(c[5]),
+          pot_tpp: cleanNumber(c[6]),
           penerimaan: 0, // Dihapus dari excel TPP
-          matra: cleanNumber(c[5]),
-          pot_koperasi: cleanNumber(c[6]),
-          zakat: cleanNumber(c[7]),
-          infaq: cleanNumber(c[8]),
-          bpjs: cleanNumber(c[9]),
-          penerimaan_bersih: cleanNumber(c[10])
+          matra: cleanNumber(c[7]),
+          pot_koperasi: cleanNumber(c[8]),
+          zakat: cleanNumber(c[9]),
+          infaq: cleanNumber(c[10]),
+          bpjs: cleanNumber(c[11]),
+          bpjs_kes_akl: cleanNumber(c[12]),
+          penerimaan_bersih: cleanNumber(c[13])
         });
       }
       return result;

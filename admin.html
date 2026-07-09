@@ -1097,7 +1097,7 @@
             </div>
             <div class="col-ref">
               <strong>Susunan Kolom Excel:</strong><br>
-              NO | NAMA | NIP | TPP KOTOR | POT (BPJS+PPH) | MATRA | KOPERASI | ZAKAT | INFAQ | BPJS | TRANSFER BANK<br>
+              NO | NAMA | NIP | GOL/RUANG | KELAS JABATAN | TPP KOTOR | POT (BPJS+PPH) | MATRA | KOPERASI | ZAKAT | INFAQ | BPJS | BPJS KES 1% AKL | TRANSFER BANK<br>
             </div>
             <label class="form-label">Paste Data Excel TPP ASN</label>
             <textarea class="paste-area" id="asn-paste" placeholder="Paste data Excel di sini (Ctrl+V)..."></textarea>
@@ -1122,7 +1122,7 @@
             </div>
             <div class="col-ref">
               <strong>Susunan Kolom Excel:</strong><br>
-              NO | NAMA | NIP | TPP KOTOR | POT (BPJS+PPH) | MATRA | KOPERASI | ZAKAT | INFAQ | BPJS | TRANSFER BANK<br>
+              NO | NAMA | NIP | GOL/RUANG | KELAS JABATAN | TPP KOTOR | POT (BPJS+PPH) | MATRA | KOPERASI | ZAKAT | INFAQ | BPJS | BPJS KES 1% AKL | TRANSFER BANK<br>
             </div>
             <label class="form-label">Paste Data Excel TPP P3K</label>
             <textarea class="paste-area" id="p3k-paste" placeholder="Paste data Excel di sini (Ctrl+V)..."></textarea>
@@ -1502,8 +1502,11 @@
 
       lines.forEach((line) => {
         let c = line.trim().split('\t');
-        if (c.length < 11 || c[0].toUpperCase().includes('NO')) return;
+        if (c.length < 14 || c[0].toUpperCase().includes('NO')) return;
 
+        // Kolom baru: NO(0) | NAMA(1) | NIP(2) | GOL/RUANG(3) | KELAS JABATAN(4)
+        // | TPP KOTOR(5) | POT BPJS+PPH(6) | MATRA(7) | KOPERASI(8) | ZAKAT(9)
+        // | INFAQ(10) | BPJS(11) | BPJS KES 1% AKL(12) | TRANSFER BANK(13)
         let nama = c[1].trim();
         let nipUser = c[2] ? c[2].trim().replace(/['`]/g, '') : '';
         let norek = ''; // Dihapus dari excel TPP
@@ -1516,11 +1519,12 @@
         if (nipUser) {
           toInsert.push({
             nip: nipUser, nama: nama, no_rek: norek, bulan: bulan, tipe: tipe,
-            tpp_kotor: cleanNum(c[3]), pot_tpp: cleanNum(c[4]),
-            penerimaan: 0, pot_koperasi: cleanNum(c[6]),
-            matra: cleanNum(c[5]), zakat: cleanNum(c[7]),
-            infaq: cleanNum(c[8]), bpjs: cleanNum(c[9]),
-            penerimaan_bersih: cleanNum(c[10])
+            tpp_kotor: cleanNum(c[5]), pot_tpp: cleanNum(c[6]),
+            penerimaan: 0, pot_koperasi: cleanNum(c[8]),
+            matra: cleanNum(c[7]), zakat: cleanNum(c[9]),
+            infaq: cleanNum(c[10]), bpjs: cleanNum(c[11]),
+            bpjs_kes_akl: cleanNum(c[12]),
+            penerimaan_bersih: cleanNum(c[13])
           });
         } else {
           unknown.push(nama);
@@ -1914,7 +1918,7 @@
       if (d.tpp) {
         secTpp.style.display = 'block';
         document.getElementById('arsip-m-tpp-kotor').textContent = formatRupiah(d.tpp.tpp_kotor);
-        document.getElementById('arsip-m-tpp-pot').textContent = formatRupiah((d.tpp.pot_tpp||0) + (d.tpp.pot_koperasi||0) + (d.tpp.matra||0) + (d.tpp.zakat||0) + (d.tpp.infaq||0) + (d.tpp.bpjs||0));
+        document.getElementById('arsip-m-tpp-pot').textContent = formatRupiah((d.tpp.pot_tpp||0) + (d.tpp.pot_koperasi||0) + (d.tpp.matra||0) + (d.tpp.zakat||0) + (d.tpp.infaq||0) + (d.tpp.bpjs||0) + (d.tpp.bpjs_kes_akl||0));
         document.getElementById('arsip-m-tpp-bersih').textContent = formatRupiah(d.tpp.penerimaan_bersih);
       } else {
         secTpp.style.display = 'none';

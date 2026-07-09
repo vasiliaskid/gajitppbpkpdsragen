@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS slip_tpp (
   zakat             BIGINT DEFAULT 0,
   infaq             BIGINT DEFAULT 0,
   bpjs              BIGINT DEFAULT 0,
+  bpjs_kes_akl      BIGINT DEFAULT 0,  -- BPJS Kesehatan 1% (Anggota Keluarga Lain)
   penerimaan_bersih BIGINT DEFAULT 0,
   created_at        TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(nip, bulan, tipe)
