@@ -935,6 +935,28 @@
     </div>
   </div>
 
+  <!-- MODAL WA INDIVIDU -->
+  <div class="modal-overlay" id="wa-modal">
+    <div class="modal">
+      <h3>📢 Kirim WA Pegawai</h3>
+      <input type="hidden" id="wa-nip">
+      <input type="hidden" id="wa-nama">
+      <div class="info-row"><span class="info-label">Penerima</span><span class="info-value" id="wa-penerima">—</span></div>
+      
+      <div class="form-group" style="margin-top: 16px;">
+        <label class="form-label">Pilih Data yang Akan Dikirim</label>
+        <select id="wa-slip-select" class="form-input">
+          <option value="">Memuat data slip...</option>
+        </select>
+      </div>
+
+      <div class="modal-btns">
+        <button class="btn-modal-close" onclick="closeWaModal()">Batal</button>
+        <button class="btn-full" id="btn-send-wa" style="flex: 1; background: var(--green);" onclick="sendIndividualWA()">Kirim Pesan</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL ARSIP -->
   <div class="modal-overlay" id="arsip-modal">
     <div class="modal" style="max-width:500px;">
@@ -1726,6 +1748,7 @@
             <div class="action-btns">
               <button class="btn-sm btn-view" onclick='showUserDetail(${JSON.stringify(u)})'>👁 Detail</button>
               <button class="btn-sm btn-view" onclick='openEditModal(${JSON.stringify(u)})'>✏️ Edit</button>
+              <button class="btn-sm btn-view" style="color: var(--green); border-color: var(--green);" onclick="openWaModal('${u.nip}', \`${u.nama.replace(/`/g, '\\`')}\`)">📢 WA</button>
               <button class="btn-sm btn-reset" onclick="resetPIN('${u.nip}','${u.pin_default}')">↩ Reset PIN</button>
               <button class="btn-sm btn-delete" onclick="deleteUser('${u.nip}','${u.nama}')">🗑 Hapus</button>
             </div>
@@ -1801,6 +1824,119 @@
       if (error) { toast('Gagal menghapus akun', 'e'); return; }
       toast(`✅ Akun ${nama} berhasil dihapus`, 's');
       loadUsers();
+    }
+
+    async function openWaModal(nip, nama) {
+      document.getElementById('wa-nip').value = nip;
+      document.getElementById('wa-nama').value = nama;
+      document.getElementById('wa-penerima').textContent = nama + ' (' + nip + ')';
+      
+      const sel = document.getElementById('wa-slip-select');
+      sel.innerHTML = '<option value="">Memuat data slip...</option>';
+      document.getElementById('wa-modal').classList.add('show');
+      
+      const u = allUsers.find(x => x.nip === nip);
+      if (!u || !u.no_wa || u.no_wa.length < 8) {
+        sel.innerHTML = '<option value="">⚠️ Pegawai belum memiliki No WA</option>';
+        document.getElementById('btn-send-wa').disabled = true;
+        return;
+      }
+
+      document.getElementById('btn-send-wa').disabled = true;
+
+      const [gajiRes, tppRes] = await Promise.all([
+        db.from('slip_gaji').select('bulan').eq('nip', nip),
+        db.from('slip_tpp').select('bulan, tipe').eq('nip', nip)
+      ]);
+
+      let options = [];
+      if (gajiRes.data) {
+        gajiRes.data.forEach(g => options.push({ val: 'gaji|' + g.bulan, text: 'Gaji - ' + g.bulan }));
+      }
+      if (tppRes.data) {
+        tppRes.data.forEach(t => options.push({ val: 'tpp_' + t.tipe.toLowerCase() + '|' + t.bulan, text: 'TPP ' + t.tipe + ' - ' + t.bulan }));
+      }
+
+      if (options.length === 0) {
+        sel.innerHTML = '<option value="">(Belum ada slip untuk pegawai ini)</option>';
+      } else {
+        sel.innerHTML = '<option value="">-- Pilih Slip --</option>';
+        options.forEach(o => {
+          const opt = document.createElement('option');
+          opt.value = o.val;
+          opt.textContent = o.text;
+          sel.appendChild(opt);
+        });
+        document.getElementById('btn-send-wa').disabled = false;
+      }
+    }
+
+    function closeWaModal() {
+      document.getElementById('wa-modal').classList.remove('show');
+    }
+
+    async function sendIndividualWA() {
+      if (!fonnteToken) {
+        alert("Token Fonnte belum diatur. Silakan isi di menu Pengaturan Sistem.");
+        return;
+      }
+
+      const nip = document.getElementById('wa-nip').value;
+      const nama = document.getElementById('wa-nama').value;
+      const val = document.getElementById('wa-slip-select').value;
+
+      if (!val) {
+        toast('Pilih slip terlebih dahulu', 'e');
+        return;
+      }
+
+      const u = allUsers.find(x => x.nip === nip);
+      if (!u || !u.no_wa) return;
+
+      const [jenisRaw, bulan] = val.split('|');
+      let jenisText = '';
+      if (jenisRaw === 'gaji') jenisText = 'Gaji';
+      else if (jenisRaw === 'tpp_asn') jenisText = 'TPP ASN';
+      else if (jenisRaw === 'tpp_p3k') jenisText = 'TPP P3K';
+
+      if (!confirm(`Kirim notifikasi WA untuk:\nNama: ${nama}\nSlip: ${jenisText} - ${bulan}\nNo WA: ${u.no_wa}\n\nLanjutkan?`)) return;
+
+      const btn = document.getElementById('btn-send-wa');
+      btn.disabled = true;
+      btn.textContent = 'Mengirim...';
+
+      const currentUrl = 'https://gajitppbpkpdsragen.netlify.app/';
+      const msg = `Kepada Bapak/Ibu Karyawan/Karyawati BPKPD Kabupaten Sragen,\n\nSlip Gaji / TPP Anda untuk bulan *${bulan}* sudah tersedia.\n\nSilakan cek di portal: ${currentUrl}\n(Login menggunakan NIP dan PIN Anda)\n\nTerima kasih.`;
+
+      try {
+        const response = await fetch("https://api.fonnte.com/send", {
+          method: "POST",
+          headers: {
+            "Authorization": fonnteToken
+          },
+          body: new URLSearchParams({
+            target: u.no_wa,
+            message: msg,
+            preview: "false"
+          })
+        });
+
+        const resData = await response.json();
+        
+        btn.disabled = false;
+        btn.textContent = 'Kirim Pesan';
+
+        if (resData.status) {
+          toast('✅ Pesan WA terkirim', 's');
+          closeWaModal();
+        } else {
+          toast(`❌ Gagal: ${resData.reason || 'Error API Fonnte'}`, 'e');
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Kirim Pesan';
+        toast(`❌ Error jaringan: ${err.message}`, 'e');
+      }
     }
 
     // ── Hapus Data Bulan ──────────────────────
