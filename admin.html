@@ -1693,10 +1693,15 @@
         return;
       }
 
+      // Deduplikasi berdasarkan nip+bulan (ambil data terakhir jika ada duplikat)
+      let dedupMap = {};
+      toInsert.forEach(r => { dedupMap[r.nip + '|' + r.bulan] = r; });
+      let dedupInsert = Object.values(dedupMap);
+
       const btn = document.getElementById('btn-import-gaji');
       btn.disabled = true; setLoad(true);
 
-      const { error } = await db.from('slip_gaji').upsert(toInsert, { onConflict: 'nip,bulan' });
+      const { error } = await db.from('slip_gaji').upsert(dedupInsert, { onConflict: 'nip,bulan' });
 
       setLoad(false); btn.disabled = false;
       if (error) {
